@@ -1,0 +1,34 @@
+
+====================================================================================================
+Modifying the path in place clobbers multiple wildcarded directory specifications.
+
+    For example,
+
+        pathmatch c:/srh/work/imagingnw/web/root/sportsphotography/200*/?*/pages/*001.html
+
+    will end up matching .../200*/* instead. Seems like I need to make copies of the pattern to work
+    with, rather than trying to be fancy and modify a single copy.
+
+    Also, I need to add code to handle the special case of a literal pattern, and bail directory
+    enumeration at the first positive match.
+
+====================================================================================================
+temp:    web\root\sportsphotography\*\*\index.html
+
+    Explanation missing.
+
+====================================================================================================
+Problem matching a file pattern.
+
+    Something's wrong with '...' matching in a directory that has the following filename:
+
+        Thumblatch Entry Sets — Rocky Mountain Hardware — Handcast in Solid Bronze.url
+
+    For example, check out d:\family\house\remodel\bookmarks\doors.
+
+====================================================================================================
+Hard crash when matching patterns ending in two slashes.
+
+    > pathmatch foo//
+
+====================================================================================================
