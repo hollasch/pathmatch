@@ -1,3 +1,5 @@
+====================================================================================================
+Pathmatch bails immediately on /.../foo.bar
 
 ====================================================================================================
 Modifying the path in place clobbers multiple wildcarded directory specifications.
@@ -30,5 +32,12 @@ Problem matching a file pattern.
 Hard crash when matching patterns ending in two slashes.
 
     > pathmatch foo//
+
+====================================================================================================
+Incomplete output with pathmatch A:/family/...
+
+    It runs until audio podcasts and then abruptly stops. Stops on
+    "A:\family\audio\podcasts\WNYC's Radiolab\War of the Worlds", which is
+    before what looks like it may be a Unicode dash of some sort.
 
 ====================================================================================================
