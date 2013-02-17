@@ -1,0 +1,7 @@
+# Git Ignore File for 'pathmatch' Project
+
+*.exe
+*.ilk
+*.obj
+*.pdb
+*.suo
