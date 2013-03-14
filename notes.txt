@@ -1,8 +1,14 @@
 ====================================================================================================
-Pathmatch bails immediately on /.../foo.bar
+Feature: Invoke a specified tool against files/directories that match the given pattern.
 
 ====================================================================================================
-Modifying the path in place clobbers multiple wildcarded directory specifications.
+Feature: Filter standard input against the given pattern
+
+====================================================================================================
+Bug: Pathmatch bails immediately on /.../foo.bar
+
+====================================================================================================
+Bug: Modifying the path in place clobbers multiple wildcarded directory specifications.
 
     For example,
 
@@ -15,12 +21,12 @@ Modifying the path in place clobbers multiple wildcarded directory specification
     enumeration at the first positive match.
 
 ====================================================================================================
-temp:    web\root\sportsphotography\*\*\index.html
+Bug: temp: web\root\sportsphotography\*\*\index.html
 
     Explanation missing.
 
 ====================================================================================================
-Problem matching a file pattern.
+Bug: Problem matching a file pattern.
 
     Something's wrong with '...' matching in a directory that has the following filename:
 
@@ -29,12 +35,12 @@ Problem matching a file pattern.
     For example, check out d:\family\house\remodel\bookmarks\doors.
 
 ====================================================================================================
-Hard crash when matching patterns ending in two slashes.
+Bug: Hard crash when matching patterns ending in two slashes.
 
     > pathmatch foo//
 
 ====================================================================================================
-Incomplete output with pathmatch A:/family/...
+Bug: Incomplete output with pathmatch A:/family/...
 
     It runs until audio podcasts and then abruptly stops. Stops on
     "A:\family\audio\podcasts\WNYC's Radiolab\War of the Worlds", which is
