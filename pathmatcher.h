@@ -1,8 +1,19 @@
-//==============================================================================
-// Declarations and definitions for the PathMatcher object. This object uses
-// path match patterns (including the special operators '?', '*', and '...' to
-// locate and report matching directory entries in a subdirectory tree.
-//==============================================================================
+//==================================================================================================
+// Declarations and definitions for the PathMatcher object. This object uses path match patterns
+// (including the special operators '?', '*', and '...' to locate and report matching directory
+// entries in a subdirectory tree.
+//
+// Copyright 2013 Steve Hollasch
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License. You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software distributed under the License
+// is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions and limitations under
+// the License.
+//==================================================================================================
 
     // Includes
 
@@ -13,8 +24,7 @@
 #include <windows.h>
 
 
-    // The callback function signature that PathMatcher uses to report back all
-    // matching entries.
+// The callback function signature that PathMatcher uses to report back all matching entries.
 
 typedef bool (MatchTreeCB) (const wchar_t* entry, const WIN32_FIND_DATA& filedata, void* userdata);
 
@@ -38,18 +48,18 @@ class PathMatcher
 
   private:
 
-    MatchTreeCB* m_callback;      // Match Callback Function
-    void*        m_cbdata;        // Callback Function Data
+    MatchTreeCB* m_callback;          // Match Callback Function
+    void*        m_cbdata;            // Callback Function Data
 
-    wchar_t  m_path [_MAX_PATH+1];// Current path
+    wchar_t  m_path [_MAX_PATH+1];    // Current path
 
-    wchar_t *m_pattern;           // Wildcarded portion of the given pattern
-    size_t   m_pattern_buff_size; // Size of the pattern buffer.
+    wchar_t *m_pattern;               // Wildcarded portion of the given pattern
+    size_t   m_pattern_buff_size;     // Size of the pattern buffer.
 
-    bool     m_dirsonly;          // If true, report directories only
+    bool     m_dirsonly;              // If true, report directories only
 
-    const wchar_t *m_ellpattern;  // Ellipsis Pattern
-    wchar_t       *m_ellpath;     // Path part to match against ellipsis pattern
+    const wchar_t *m_ellpattern;      // Ellipsis Pattern
+    wchar_t       *m_ellpath;         // Path part to match against ellipsis pattern
 
   private:    // Private Methods
 
@@ -77,8 +87,6 @@ class PathMatcher
     {
         return _countof(m_path) - (pathend - m_path) - 1;
     }
-
-    bool IsDotsDir();            // True if str is "." or ".."
 
     // Return true if the string is either "." or ".."
 

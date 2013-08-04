@@ -1,9 +1,19 @@
-/*==============================================================================
-pathmatch
-
-    This program returns all files and directories matching the specified
-    pattern.
-==============================================================================*/
+//==================================================================================================
+// pathmatch
+//
+//     This program returns all files and directories matching the specified pattern.
+//
+// Copyright 2013 Steve Hollasch
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License. You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software distributed under the License
+// is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions and limitations under
+// the License.
+//==================================================================================================
 
 #include "pathmatcher.h"
 
@@ -11,35 +21,34 @@ pathmatch
 
 using namespace std;
 
-
     // Usage Information
 
 const wchar_t usage[] =
-L"\n"
-L"pathmatch v005 / 2007-12-03 / Steve Hollasch <steve@hollasch.net>\n"
-L"pathmatch: Report files and directories matching the specified pattern\n"
-L"Usage    : pathmatch [-s<slash>] [-f] <pattern> ... <pattern>\n"
-L"\n"
-L"    pathmatch finds and reports all files and directories matching wildcard\n"
-L"    patterns. These patterns may contain the special characters '?', '*',\n"
-L"    and '...'. The '?' pattern matches any single character, '*' matches\n"
-L"    multiple characters except slashes, and '...' matches multiple\n"
-L"    characters including slashes. For example, the following patterns all\n"
-L"    match the file \"abc\\def\\ghi\\jkl\": \"abc\\d?f\\??i\\jkl\", \"abc\\*\\*\\jkl\",\n"
-L"    and \"abc\\...\\jkl\".\n"
-L"\n"
-L"    The following command options are supported:\n"
-L"\n"
-L"    -s<slash>  Specifies the slash direction to be reported. By default,\n"
-L"               slashes will be back slashes. Use \"-s/\" to report paths\n"
-L"               with forward slashes.\n"
-L"\n"
-L"    -a         Report absolute paths. By default, reported paths are\n"
-L"               relative to the current working directory.\n"
-L"\n"
-L"    -f         Report files only (no directories). To report directories\n"
-L"               only, append a slash to the pattern.\n"
-L"\n";
+    L"\n"
+    L"pathmatch v005 / 2007-12-03 / Steve Hollasch <steve@hollasch.net>\n"
+    L"pathmatch: Report files and directories matching the specified pattern\n"
+    L"Usage    : pathmatch [-s<slash>] [-f] <pattern> ... <pattern>\n"
+    L"\n"
+    L"    pathmatch finds and reports all files and directories matching wildcard\n"
+    L"    patterns. These patterns may contain the special characters '?', '*',\n"
+    L"    and '...'. The '?' pattern matches any single character, '*' matches\n"
+    L"    multiple characters except slashes, and '...' matches multiple\n"
+    L"    characters including slashes. For example, the following patterns all\n"
+    L"    match the file \"abc\\def\\ghi\\jkl\": \"abc\\d?f\\??i\\jkl\", \"abc\\*\\*\\jkl\",\n"
+    L"    and \"abc\\...\\jkl\".\n"
+    L"\n"
+    L"    The following command options are supported:\n"
+    L"\n"
+    L"    -s<slash>  Specifies the slash direction to be reported. By default,\n"
+    L"               slashes will be back slashes. Use \"-s/\" to report paths\n"
+    L"               with forward slashes.\n"
+    L"\n"
+    L"    -a         Report absolute paths. By default, reported paths are\n"
+    L"               relative to the current working directory.\n"
+    L"\n"
+    L"    -f         Report files only (no directories). To report directories\n"
+    L"               only, append a slash to the pattern.\n"
+    L"\n";
 
 
 MatchTreeCB mtcallback;    // Matching Entry Callback Routine
@@ -97,9 +106,8 @@ int wmain (int argc, wchar_t *argv[])
     {
         wchar_t *arg = argv[argi];
 
-        // The argument "/?" is a special case. While it's technically a valid
-        // file system pattern, we treat it as a request for tool information by
-        // convention (if it's the first argument).
+        // The argument "/?" is a special case. While it's technically a valid file system pattern,
+		// we treat it as a request for tool information by convention (if it's the first argument).
 
         if (0 == (wcscmp(arg, L"/?")))
         {   wcout << usage;
@@ -166,31 +174,25 @@ bool mtcallback (
     //     encountered and error attempting to convert a path to a full path.
     //==========================================================================
 
-          wchar_t  fullpath [_MAX_PATH + 1];  // Optional Full Path
-    const wchar_t* item = entry;              // Pointer to Matching Entry
+    wchar_t fullpath [_MAX_PATH + 1];  // Optional Full Path
+    const wchar_t* item = entry;       // Pointer to Matching Entry
 
     // Get the properly typed report options structure from the callback data.
 
     const ReportOpts *report_opts = static_cast<const ReportOpts*>(cbdata);
 
-    // If we are to report only files and this entry is a directory, then 
-    // return without reporting.
+    // If we are to report only files and this entry is a directory, then return without reporting.
 
-    if (  report_opts->filesonly
-       && (filedata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-       )
-    {
+    if (report_opts->filesonly && (filedata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
         return true;
-    }
 
     if (!report_opts->fullpath)
-    {   item = entry;
-    }
+        item = entry;
     else
     {
-        // If we are to convert the default relative path to a full path, use
-        // the stdlib _fullpath function to do so. If this is not possible, then
-        // emit an error message and halt matching entry enumeration.
+        // If we are to convert the default relative path to a full path, use the stdlib _fullpath
+		// function to do so. If this is not possible, then emit an error message and halt matching
+		// entry enumeration.
 
         if (!_wfullpath(fullpath,entry,_MAX_PATH))
         {
@@ -207,8 +209,7 @@ bool mtcallback (
     // Print out the matching item, converted to the requested slash type.
 
     for (const wchar_t *ptr = item;  *ptr;  ++ptr)
-    {   wcout << (IsSlash(*ptr) ? report_opts->slashchar : *ptr);
-    }
+        wcout << (IsSlash(*ptr) ? report_opts->slashchar : *ptr);
 
     wcout << endl;
 
