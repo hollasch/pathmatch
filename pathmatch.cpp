@@ -5,11 +5,11 @@ pathmatch
     pattern.
 ==============================================================================*/
 
-#include <pathmatcher.h>
+#include "pathmatcher.h"
+
 #include <iostream>
 
 using namespace std;
-using namespace srhlib;
 
 
     // Usage Information

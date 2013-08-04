@@ -1,7 +1,14 @@
 # Git Ignore File for 'pathmatch' Project
 
+# Generated Files
+
+[Dd]ebug/
+[Rr]elease/
+ipch/
+x64/
+
+# Visual Studio Files
+
 *.exe
-*.ilk
-*.obj
-*.pdb
-*.suo
+*.opensdf
+*.sdf
