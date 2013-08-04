@@ -4,17 +4,19 @@
 
     DESCRIPTION
 
-    This is an incomplete collection of source for my pathmatch command line
-    utility. It also uses code from a personal library of mine, so I need to
-    figure out how I want to package and share this code out. Things will flesh
-    out in the future.  -- 2013-March-09
+    'pathmatch' is a tool to match files and directories against a path pattern
+    that supports '?', '*', and '...' wildcards. The '...' specifier matches any
+    character, including slashes. For example, "foo...bar" will match
+    "fooz/blaz/rebar". To find all files with a .obj extension, you'd give the
+    path '....obj'. Very handy for locating files and directories, and for using
+    as a command-line argument to the 'for' command.
 
 
     BUILDING
 
-    This project will not build at this point, since it relies on code from my
-    personal library. This is just the seed of the GitHub project for now.
+    This project requires Visual Studio to build, and generates a 64-bit console
+    application.
 
 
-    --
-    Steve Hollasch <steve@hollasch.net>  /  2013 March 9
+--
+Steve Hollasch <steve@hollasch.net>  /  2013 August 3
