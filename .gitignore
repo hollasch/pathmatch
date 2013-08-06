@@ -2,10 +2,7 @@
 
 # Generated Files
 
-[Dd]ebug/
-[Rr]elease/
-ipch/
-x64/
+/out/
 
 # Visual Studio Files
 
@@ -13,3 +10,4 @@ x64/
 *.opensdf
 *.sdf
 *.suo
+*.vcxproj.user
