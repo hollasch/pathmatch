@@ -15,15 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pathmatch.cpp">
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pathmatcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wildcomp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PathMatchLib\pathmatcher.h">
+    <ClInclude Include="pathmatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PathMatchLib\wildcomp.h">
+    <ClInclude Include="wildcomp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

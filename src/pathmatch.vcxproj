@@ -20,12 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pathmatch.cpp" />
-    <ClCompile Include="pathmatcher.cpp" />
-    <ClCompile Include="wildcomp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pathmatcher.h" />
-    <ClInclude Include="wildcomp.h" />
+    <ClInclude Include="PathMatchLib\pathmatcher.h" />
+    <ClInclude Include="PathMatchLib\wildcomp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="PathMatchLib\PathMatchLib.vcxproj">
+      <Project>{eec2ad5f-12e5-43d8-b476-b1763f5b5124}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2B1E8A50-AD94-43A3-8C1C-71E0295D21C7}</ProjectGuid>
@@ -111,6 +114,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>PathMatchLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

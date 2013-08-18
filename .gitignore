@@ -6,7 +6,6 @@
 
 # Visual Studio Files
 
-*.exe
 *.opensdf
 *.sdf
 *.suo
