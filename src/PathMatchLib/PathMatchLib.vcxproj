@@ -86,11 +86,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pathmatcher.cpp" />
-    <ClCompile Include="wildcomp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pathmatcher.h" />
-    <ClInclude Include="wildcomp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

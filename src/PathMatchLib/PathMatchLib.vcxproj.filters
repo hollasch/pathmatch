@@ -21,15 +21,9 @@
     <ClCompile Include="pathmatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="wildcomp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pathmatcher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wildcomp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
