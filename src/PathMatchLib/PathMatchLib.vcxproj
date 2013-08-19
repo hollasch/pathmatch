@@ -47,6 +47,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)..\out\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\out\$(Platform)\$(Configuration)\intermediate\</IntDir>
+    <TargetName>PathMatch</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
