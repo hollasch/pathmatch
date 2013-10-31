@@ -107,7 +107,7 @@ int wmain (int argc, wchar_t *argv[])
         wchar_t *arg = argv[argi];
 
         // The argument "/?" is a special case. While it's technically a valid file system pattern,
-		// we treat it as a request for tool information by convention (if it's the first argument).
+        // we treat it as a request for tool information by convention (if it's the first argument).
 
         if (0 == (wcscmp(arg, L"/?")))
         {   wcout << usage;
@@ -191,8 +191,8 @@ bool mtcallback (
     else
     {
         // If we are to convert the default relative path to a full path, use the stdlib _fullpath
-		// function to do so. If this is not possible, then emit an error message and halt matching
-		// entry enumeration.
+        // function to do so. If this is not possible, then emit an error message and halt matching
+        // entry enumeration.
 
         if (!_wfullpath(fullpath,entry,_MAX_PATH))
         {
