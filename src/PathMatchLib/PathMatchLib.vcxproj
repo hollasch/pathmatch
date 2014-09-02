@@ -40,8 +40,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)..\out\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\out\$(Platform)\$(Configuration)\intermediate\</IntDir>
+    <OutDir>$(SolutionDir)..\out\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)..\out\$(Platform)\$(Configuration)\$(ProjectName)\intermediate\</IntDir>
     <TargetName>PathMatch</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
