@@ -1,6 +1,6 @@
 //==================================================================================================
 // PathMatch.cpp
-// 
+//
 //     Routines for matching wildcard path specifications against a given directory tree.
 //
 // Copyright 2013 Steve Hollasch
@@ -129,9 +129,9 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
     // While doing so, it collapses sequences of repeating slashes, eliminates
     // "/./" subpaths, resolves parent subpaths ("/../"), and determines if a
     // directory pattern (trailing slash) was specified.
-    // 
+    //
     // The parameter 'pattern' is the original caller-supplied pattern.
-    // 
+    //
     // This function returns false if this routine encounted an out-of-memory
     // error.
     //--------------------------------------------------------------------------
@@ -275,16 +275,16 @@ bool PathMatcher::Match (
     // This function walks a directory tree according to the given wildcard
     // pattern, and calls the specified callback function for each matching
     // entry.
-    // 
+    //
     // 'path_pattern' is the pattern to match against tree entries.
     // 'callback_func' is the callback function for each matching entry.
     // 'userdata' is the user data to be passed along to callback function.
-    // 
+    //
     // This function returns true if the function successfully completes the
     // search, otherwise false.
     //--------------------------------------------------------------------------
 
-    if (!callback_func)      // Bail out if the user didn't provide a 
+    if (!callback_func)      // Bail out if the user didn't provide a
         return false;        // callback function.
 
     m_callback = callback_func;
@@ -418,7 +418,7 @@ void PathMatcher::MatchDir (
 
     // If there's a wildcard subdirectory or file name, then enumerate all
     // directory entries and filter the results.
-    
+
     if (!fliteral || FAILED(retval))
     {   pathend[0] = L'*';
         pathend[1] = 0;
@@ -484,7 +484,7 @@ void PathMatcher::HandleEllipsisSubpath (
 {
     //--------------------------------------------------------------------------
     // This function handles subdirectories that contain ellipses.
-    // 
+    //
     // The parameter 'pathend' points to one past the last character.
     // The 'pattern' parameter is a pointer to the beginning of the current
     // subdirectory of the full pattern. Finally, 'ipatt' is an integer offset
@@ -538,7 +538,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
     //--------------------------------------------------------------------------
     // This procedure is called when an ellipsis is encountered, and recursively
     // fetches all tree entries and optionally matches against a pattern.
-    // 
+    //
     // 'pathend' is the end of the current path (one past last character)
     //
     // 'ellipsis_prefix' is the pattern that prefixes the ellipsis, followed by
@@ -615,11 +615,11 @@ bool wildcomp (const wchar_t *pattern, const wchar_t *string)
     //     of characters. All other characters are interpreted literally, though they are compared
     //     without regard to case (for exampmle, 'a' matches 'A'). For case-sensitive matches, use
     //     wildcompc().
-    // 
+    //
     // Parameters
     //     pattern - The pattern to compare with the string
     //     string  - The string to test for matching
-    // 
+    //
     // Returns
     //     True if and only if the pattern matches the string. This function returns false if either
     //     the pattern or the string are null pointers.
