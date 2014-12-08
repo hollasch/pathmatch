@@ -749,28 +749,28 @@ bool pathmatch (const wchar_t *pattern, const wchar_t *path)
 {
     //==============================================================================================
     // pathmatch
-    //     Compares a path against a VMS-style wildcard specification. In the pattern string, the
-    //     character '?' denotes any single character except '/', the character '*' denotes any
+    //     Compares a single path against a VMS-style wildcard specification. In the pattern string,
+    //     the character '?' denotes any single character except '/', the character '*' denotes any
     //     number of characters except '/', and the sequence '...' denotes any number of characters
     //     including '/'. All other characters in the pattern are interpreted literally, though
     //     without regard to case. For example, 'a' matches 'A'.
-    // 
+    //
     //     Note that this routine also interprets a backslash ('\') as a euphemism for a forward
     //     slash.
-    // 
+    //
     //     Also note:
-    // 
+    //
     //         - Multiple slashes compare as a single slash. That is, "/////" compares the same
     //           as "/".
-    // 
+    //
     //         - ".../" and "*\" (without regard to slash type) both match the empty string, so
     //           ".../foo" and "*\foo" both match "foo". To exclude this rule, use a question mark
     //           like so: "...?/foo".
-    // 
+    //
     // Parameters
     //     pattern - The pattern to compare with the path.
     //     path    - The path to test for matching
-    // 
+    //
     // Returns
     //     True if and only if the pattern matches the given path. This function returns false if
     //     the pattern is null or empty, or if the path is null.
