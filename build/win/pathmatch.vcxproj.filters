@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\PathMatchLib\pathmatcher.cpp">
+    <ClCompile Include="..\..\src\pathmatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\pathmatch.cpp">
+    <ClCompile Include="..\..\src\pathmatcher\pathmatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
