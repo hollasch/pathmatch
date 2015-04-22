@@ -120,13 +120,6 @@ class PathMatcher
 
     size_t PathSpaceLeft (const wchar_t *pathend) const;
 
-    // Return true if the string is either "." or ".."
-
-    static inline bool IsDotsDir (const wchar_t *str)
-    {
-        return (str[0]==L'.') && (!str[1] || ((str[1]==L'.') && !str[2]));
-    }
-
     // Return true if string begins with parent ("..") subpath.
 
     static inline bool IsUpDir (const wchar_t *str)

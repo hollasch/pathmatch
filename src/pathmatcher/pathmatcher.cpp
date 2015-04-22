@@ -38,6 +38,13 @@ static inline bool entryIsADir (WIN32_FIND_DATA &finddata)
 }
 
 
+static inline bool isDotsDir (const wchar_t *str)
+{
+    // Return true if the string is either "." or ".."
+    return (str[0] == L'.') && (!str[1] || ((str[1] == L'.') && !str[2]));
+}
+
+
 
 // =================================================================================================
 // PathMatch Namespace
@@ -740,7 +747,7 @@ void PathMatcher::MatchDir (
         do {
             // Ignore "." and ".." entries.
 
-            if (IsDotsDir(finddata.cFileName)) continue;
+            if (isDotsDir(finddata.cFileName)) continue;
 
             if (!fliteral && !wildComp (subpattern, finddata.cFileName))
                 continue;
@@ -878,7 +885,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
     do {
         // Ignore "." and ".." entries.
 
-        if (IsDotsDir(finddata.cFileName)) continue;
+        if (isDotsDir(finddata.cFileName)) continue;
 
         // Skip file entries if we're only looking for directories.
 
