@@ -118,13 +118,7 @@ class PathMatcher
 
     wchar_t* AppendPath (wchar_t *pathend, const wchar_t *str);
 
-    // Returns the number of characters that can be appended to the m_path
-    // string, while allowing room for a terminating character.
-
-    inline size_t PathSpaceLeft (wchar_t *pathend)
-    {
-        return _countof(m_path) - (pathend - m_path) - 1;
-    }
+    size_t PathSpaceLeft (const wchar_t *pathend) const;
 
     // Return true if the string is either "." or ".."
 

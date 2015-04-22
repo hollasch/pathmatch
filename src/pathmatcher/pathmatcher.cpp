@@ -367,6 +367,16 @@ PathMatcher::~PathMatcher ()
 
 
 
+size_t PathMatcher::PathSpaceLeft (const wchar_t *pathend) const
+{
+    // Returns the number of characters that can be appended to the m_path
+    // string, while allowing room for a terminating character.
+
+    return _countof(m_path) - (pathend - m_path) - 1;
+}
+
+
+
 wchar_t* PathMatcher::AppendPath (wchar_t *pathend, const wchar_t *str)
 {
     //----------------------------------------------------------------------------------------------
