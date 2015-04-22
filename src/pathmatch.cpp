@@ -156,6 +156,14 @@ int wmain (int argc, wchar_t *argv[])
 
 
 
+static inline bool isSlash (wchar_t c)
+{
+    // Return true if the given character is a fore or back slash.
+    return (c == L'/') || (c == L'\\');
+}
+
+
+
 bool mtcallback (
     const wchar_t*         entry,
     const WIN32_FIND_DATA& filedata,
@@ -210,7 +218,7 @@ bool mtcallback (
     // Print out the matching item, converted to the requested slash type.
 
     for (const wchar_t *ptr = item;  *ptr;  ++ptr)
-        wcout << (IsSlash(*ptr) ? report_opts->slashchar : *ptr);
+        wcout << (isSlash(*ptr) ? report_opts->slashchar : *ptr);
 
     wcout << endl;
 
