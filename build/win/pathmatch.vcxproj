@@ -151,7 +151,7 @@
     <ClCompile Include="..\..\src\pathmatcher\pathmatcher.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\PathMatchLib\pathmatcher.h" />
+    <ClInclude Include="..\..\src\pathmatcher\pathmatcher.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

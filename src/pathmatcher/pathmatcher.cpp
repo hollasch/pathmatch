@@ -434,7 +434,7 @@ void PathMatcher::MatchDir (
 
             if (IsDotsDir(finddata.cFileName)) continue;
 
-            if (!fliteral && !wildcomp (subpattern, finddata.cFileName))
+            if (!fliteral && !wildComp (subpattern, finddata.cFileName))
                 continue;
 
             // Skip files if the pattern ended in a slash or if the original
@@ -583,14 +583,14 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
         // If there's an ellipsis prefix, then ensure first that we match
         // against it before descending further.
 
-        if (ellipsis_prefix && !wildcomp (ellipsis_prefix, finddata.cFileName))
+        if (ellipsis_prefix && !wildComp (ellipsis_prefix, finddata.cFileName))
             continue;
 
         wchar_t* pathend_new = AppendPath (pathend, finddata.cFileName);
 
         if (!pathend_new) break;
 
-        if (!m_ellpattern || pathmatch(m_ellpattern, m_ellpath))
+        if (!m_ellpattern || pathMatch(m_ellpattern, m_ellpath))
         {
             if (!m_callback (m_path, finddata, m_cbdata))
                 return;
@@ -606,10 +606,10 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
 
 
-bool wildcomp (const wchar_t *pattern, const wchar_t *string)
+bool wildComp (const wchar_t *pattern, const wchar_t *string)
 {
     //==============================================================================================
-    // wildcomp
+    // wildComp
     //     Compares a pattern against a string to determine if the two match. In the pattern string,
     //     the character '?' denotes any single character, and the character '*' denotes any number
     //     of characters. All other characters are interpreted literally, though they are compared
@@ -666,7 +666,7 @@ bool wildcomp (const wchar_t *pattern, const wchar_t *string)
 
     while (true)
     {
-        if (wildcomp (pattern, string))
+        if (wildComp (pattern, string))
             return true;
 
         if (!*string++)
@@ -676,10 +676,10 @@ bool wildcomp (const wchar_t *pattern, const wchar_t *string)
 
 
 
-bool wildcompc (const wchar_t *pattern, const wchar_t *string)
+bool wildCompCaseSensitive (const wchar_t *pattern, const wchar_t *string)
 {
     //==============================================================================================
-    // wildcompc
+    // wildCompCaseSensitive
     //     Compares a pattern against a string to determine if the two match. In the pattern string,
     //     the character '?' denotes any single character, and the character '*' denotes any number
     //     of characters. All other characters are interpreted literally, and must match case. For
@@ -735,7 +735,7 @@ bool wildcompc (const wchar_t *pattern, const wchar_t *string)
 
     while (true)
     {
-        if (wildcompc (pattern, string))
+        if (wildCompCaseSensitive (pattern, string))
             return true;
 
         if (!*string++)
@@ -745,7 +745,7 @@ bool wildcompc (const wchar_t *pattern, const wchar_t *string)
 
 
 
-bool pathmatch (const wchar_t *pattern, const wchar_t *path)
+bool pathMatch (const wchar_t *pattern, const wchar_t *path)
 {
     //==============================================================================================
     // pathmatch
@@ -859,7 +859,7 @@ bool pathmatch (const wchar_t *pattern, const wchar_t *path)
 
         // Match the remainder of the pattern against the remainder of the path.
 
-        if (pathmatch(ptr,path))
+        if (pathMatch(ptr,path))
             return true;
     }
 
@@ -870,7 +870,7 @@ bool pathmatch (const wchar_t *pattern, const wchar_t *path)
 
         for (;; ++path)
         {
-            if (pathmatch (pattern, path)) return true;
+            if (pathMatch(pattern, path)) return true;
             if (*path == 0) return false;
         }
     }
@@ -881,11 +881,11 @@ bool pathmatch (const wchar_t *pattern, const wchar_t *path)
 
         for (; *path && !IsSlash(*path);  ++path)
         {
-            if (pathmatch (pattern, path)) return true;
+            if (pathMatch(pattern, path)) return true;
         }
 
         // Test the remainder of the pattern and path.
 
-        return pathmatch (pattern, path);
+        return pathMatch(pattern, path);
     }
 }

@@ -22,17 +22,22 @@
 #include <windows.h>
 
 
-    // Function Declarations
+    // Standalone Function Declarations
 
-bool wildcomp  (const wchar_t *pattern, const wchar_t *string);
-bool wildcompc (const wchar_t *pattern, const wchar_t *string);
-bool pathmatch (const wchar_t *pattern, const wchar_t *path);
+// Wildcard comparison test. Case insensitive.
+bool wildComp (const wchar_t *pattern, const wchar_t *string);
+
+// Wildcard comparison test. Case sensitive.
+bool wildCompCaseSensitive (const wchar_t *pattern, const wchar_t *string);
+
+// Path matching test, with ellipses (directory-spanning path portion), asterisk (substring of
+// directory or file name), and question mark (matches any single character).
+bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
 
     // Function Definitions
 
 // Return true if and only if the string begins with "...".
-
 inline bool IsEllipsis (const wchar_t *str)
 {
     return (str[0] == L'.') && (str[1] == L'.') && (str[2] == L'.');
@@ -40,21 +45,18 @@ inline bool IsEllipsis (const wchar_t *str)
 
 // Return true if and only if the string begins with a wildcard that matches
 // multiple characters ("*" or "...").
-
 inline bool IsMultiWildStr (const wchar_t * str)
 {
     return (*str == L'*') || IsEllipsis(str);
 }
 
 // Return true if and only if the string begins with a wildcard.
-
 inline bool IsWildStr (const wchar_t * str)
 {
     return (*str == L'?') || IsMultiWildStr(str);
 }
 
 // Return true if and only if the character is a forward or backward slash.
-
 inline bool IsSlash (const wchar_t c)
 {
     return ((c == L'/') || (c == L'\\'));
@@ -62,7 +64,6 @@ inline bool IsSlash (const wchar_t c)
 
 
 // The callback function signature that PathMatcher uses to report back all matching entries.
-
 typedef bool (MatchTreeCB) (const wchar_t* entry, const WIN32_FIND_DATA& filedata, void* userdata);
 
 

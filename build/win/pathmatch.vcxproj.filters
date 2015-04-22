@@ -23,7 +23,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\PathMatchLib\pathmatcher.h">
+    <ClInclude Include="..\..\src\pathmatcher\pathmatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
