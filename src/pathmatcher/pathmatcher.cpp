@@ -27,62 +27,6 @@
 
 
 // =================================================================================================
-// Local Helper Functions
-
-static const wchar_t c_slash = L'\\';
-
-static bool entryIsADir (WIN32_FIND_DATA &finddata)
-{
-    // Returns true if the current directory entry is a directory.
-    return 0 != (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-}
-
-
-static bool isDotsDir (const wchar_t *str)
-{
-    // Return true if the string is either "." or ".."
-    return (str[0] == L'.') && (!str[1] || ((str[1] == L'.') && !str[2]));
-}
-
-
-static bool IsEllipsis (const wchar_t *str)
-{
-    // Return true if and only if the string begins with "...".
-    return (str[0] == L'.') && (str[1] == L'.') && (str[2] == L'.');
-}
-
-
-static bool IsMultiWildStr (const wchar_t * str)
-{
-    // Return true if and only if the string begins with a wildcard that matches
-    // multiple characters ("*" or "...").
-    return (*str == L'*') || IsEllipsis(str);
-}
-
-
-static bool IsWildStr (const wchar_t * str)
-{
-    // Return true if and only if the string begins with a wildcard.
-    return (*str == L'?') || IsMultiWildStr(str);
-}
-
-
-static bool IsSlash (const wchar_t c)
-{
-    // Return true if and only if the character is a forward or backward slash.
-    return ((c == L'/') || (c == L'\\'));
-}
-
-
-static bool IsUpDir (const wchar_t *str)
-{
-    // Return true if string begins with parent ("..") subpath.
-    return (str[0]==L'.') && (str[1]==L'.') && (!str[2] || IsSlash(str[2]));
-}
-
-
-
-// =================================================================================================
 // PathMatch Namespace
 // =================================================================================================
 
@@ -90,10 +34,37 @@ namespace PathMatch {
 
 
 
-
 // =================================================================================================
 // Standalone PathMatch Functions
 // =================================================================================================
+
+
+    // ==================
+    // Helper Functions
+    // ==================
+
+static bool isSlash (const wchar_t c)
+{
+    // Return true if and only if the character is a forward or backward slash.
+    return ((c == L'/') || (c == L'\\'));
+}
+
+
+static bool isEllipsis (const wchar_t *str)
+{
+    // Return true if and only if the string begins with "...".
+    return (str[0] == L'.') && (str[1] == L'.') && (str[2] == L'.');
+}
+
+
+static bool isMultiWildStr (const wchar_t * str)
+{
+    // Return true if and only if the string begins with a wildcard that matches
+    // multiple characters ("*" or "...").
+    return (*str == L'*') || isEllipsis(str);
+}
+
+
 
 bool wildComp (const wchar_t *pattern, const wchar_t *string)
 {
@@ -273,20 +244,20 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
 
     while (*pattern && *path)
     {
-        if (IsSlash(path[0]))             // Consume repeated slashes on path.
-        {   while (IsSlash(path[1]))
+        if (isSlash(path[0]))             // Consume repeated slashes on path.
+        {   while (isSlash(path[1]))
                 ++ path;
         }
 
-        if (IsSlash(pattern[0]))
+        if (isSlash(pattern[0]))
         {
-            if (!IsSlash(path[0]))
+            if (!isSlash(path[0]))
                 return false;
 
-            while (IsSlash(pattern[1]))  // Consume repeated slashes on pattern.
+            while (isSlash(pattern[1]))  // Consume repeated slashes on pattern.
                 ++ pattern;
         }
-        else if (IsMultiWildStr (pattern))
+        else if (isMultiWildStr (pattern))
         {   // If we've hit a multi-character wildcard character, then drop to section below.
             break;
         }
@@ -298,7 +269,7 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
         {   if (tolower(*pattern) != tolower(*path))
                 return false;
         }
-        else if (IsSlash(*path))         // '?' matches all but slash.
+        else if (isSlash(*path))         // '?' matches all but slash.
         {   return false;
         }
 
@@ -309,7 +280,7 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
     // Unless we stopped on a multi-character wildcard, we're done matching. The only valid way to
     // match at this point is if both the pattern and the path are exhausted.
 
-    if (!IsMultiWildStr(pattern))
+    if (!isMultiWildStr(pattern))
         return (*pattern == 0) && (*path == 0);
 
     // Advance past the multi-character wildcard(s). A sequence of asterisks is equivalent to a
@@ -319,7 +290,7 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
 
     bool fEllipsis = false;
 
-    while (IsMultiWildStr (pattern))
+    while (isMultiWildStr (pattern))
     {
         if (pattern[0] == L'*')
             pattern += 1;
@@ -338,13 +309,13 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
     // A multi-wild pattern (* or ...) followed by any number of slashes can match the empty string,
     // so we test for that here. Thus, ".../foo" will match against "foo".
 
-    if (IsSlash(*pattern))
+    if (isSlash(*pattern))
     {
         // Search forward past any number of trailing slashes.
 
         const wchar_t *ptr = pattern + 1;
 
-        while (IsSlash(*ptr)) ++ptr;
+        while (isSlash(*ptr)) ++ptr;
 
         // Match the remainder of the pattern against the remainder of the path.
 
@@ -368,7 +339,7 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
         // If we have an asterisk, then recursively nibble away at the path until we encounter a
         // slash or exhaust the path.
 
-        for (; *path && !IsSlash(*path);  ++path)
+        for (; *path && !isSlash(*path);  ++path)
         {
             if (pathMatch(pattern, path)) return true;
         }
@@ -384,6 +355,37 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
 //==================================================================================================
 // PathMatcher Class Implementation
 //==================================================================================================
+
+
+    // ==================
+    // Helper Functions
+    // ==================
+
+static const wchar_t c_slash = L'\\';
+
+static bool entryIsADir (const WIN32_FIND_DATA &finddata)
+{
+    // Returns true if the current directory entry is a directory.
+    return 0 != (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+static bool isDotsDir (const wchar_t *str)
+{
+    // Return true if the string is either "." or ".."
+    return (str[0] == L'.') && (!str[1] || ((str[1] == L'.') && !str[2]));
+}
+
+static bool isUpDir (const wchar_t *str)
+{
+    // Return true if string begins with parent ("..") subpath.
+    return (str[0]==L'.') && (str[1]==L'.') && (!str[2] || isSlash(str[2]));
+}
+
+
+
+    // ============================
+    // PathMatcher Implementation
+    // ============================
 
 PathMatcher::PathMatcher ()
   : m_callback (NULL),
@@ -503,7 +505,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
     // Preserve leading multiple slashes at the beginning of the pattern.
 
-    while (IsSlash(*src))
+    while (isSlash(*src))
         *dest++ = *src++;
 
     // Now copy the remainder of the path. Eliminate "." subpaths, reduce repeating slashes to
@@ -511,7 +513,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
     while (*src)
     {
-        if ((src[0] == L'.') && ((src[1] == 0) || IsSlash(src[1])))
+        if ((src[0] == L'.') && ((src[1] == 0) || isSlash(src[1])))
         {
             // The current subpath is a '.' directory.
 
@@ -519,7 +521,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
             // Skip past any trailing slashes
 
-            do { ++ src; } while (IsSlash(*src));
+            do { ++ src; } while (isSlash(*src));
 
             if (atStart)
             {
@@ -546,7 +548,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
                 // the copy.
             }
         }
-        else if (IsSlash(*src))
+        else if (isSlash(*src))
         {
             if (src[1] == 0)          // If the pattern ends in a slash, then
             {                         // record that the pattern is specifying
@@ -556,40 +558,40 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
             else                      // Copy one slash only.
             {
                 *dest++ = c_slash;
-                do { ++src; } while (IsSlash(*src));
+                do { ++src; } while (isSlash(*src));
             }
         }
-        else if (IsUpDir(src))
+        else if (isUpDir(src))
         {
             // If we encounter a "../" in the middle of a pattern, then erase the prior parent
             // directory if possible, otherwise append the "../" substring.
 
             // Skip forward in the source string past all trailing slashes.
 
-            for (src+=3;  IsSlash(*src);  ++src)
+            for (src+=3;  isSlash(*src);  ++src)
                 continue;
 
             const size_t destlen = dest - m_pattern;   // Current pattern length
             wchar_t* parent = NULL;                    // Candidate parent portion
 
-            if ((destlen >= 2) && IsSlash(dest[-1]) && !IsSlash(dest[-2]))
+            if ((destlen >= 2) && isSlash(dest[-1]) && !isSlash(dest[-2]))
             {
                 parent = dest - 2;
 
                 // Scan backwards to the beginning of the parent directory.
 
-                while ((parent > m_pattern) && !IsSlash(*parent))
+                while ((parent > m_pattern) && !isSlash(*parent))
                     --parent;
 
                 // Move past the prior leading slash if necessary (if the parent directory isn't
                 // the first subdirectory in the path).
 
-                if (IsSlash(*parent)) ++parent;
+                if (isSlash(*parent)) ++parent;
 
                 // If the parent directory is already a "../", then just append the current up
                 // directory to the last one.
 
-                if (IsUpDir(parent))
+                if (isUpDir(parent))
                     parent = NULL;
             }
 
@@ -606,12 +608,12 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
         {
             // If no special cases, then just copy up till the next slash or end of pattern.
 
-            while (*src && !IsSlash(*src))
+            while (*src && !isSlash(*src))
                 *dest++ = *src++;
         }
     }
 
-    assert (!IsSlash(dest[-1]));
+    assert (!isSlash(dest[-1]));
 
     *dest = 0;
 
@@ -662,12 +664,12 @@ bool PathMatcher::Match (
 
     for (; *ptr; ++ptr)
     {
-        if (IsSlash(*ptr) || (*ptr == L':'))
+        if (isSlash(*ptr) || (*ptr == L':'))
         {
             rootend   = ptr;
             wildstart = ptr + 1;
         }
-        else if ((*ptr == L'?') || IsMultiWildStr(ptr))
+        else if ((*ptr == L'?') || isMultiWildStr(ptr))
         {
             break;
         }
@@ -725,8 +727,8 @@ void PathMatcher::MatchDir (
     bool fliteral = true;
 
     while (  pattern[ipatt]
-          && !IsSlash(pattern[ipatt])
-          && !IsEllipsis(pattern + ipatt))
+          && !isSlash(pattern[ipatt])
+          && !isEllipsis(pattern + ipatt))
     {
         if ((pattern[ipatt] == L'?') || (pattern[ipatt] == L'*'))
             fliteral = false;
@@ -737,15 +739,15 @@ void PathMatcher::MatchDir (
     // If the current pattern subdirectory contains an ellipsis, then handle the remainder of the
     // pattern and return.
 
-    if (IsEllipsis(pattern + ipatt))
+    if (isEllipsis(pattern + ipatt))
     {
         HandleEllipsisSubpath (pathend, pattern, ipatt);
         return;
     }
 
-    assert (!pattern[ipatt] || IsSlash(pattern[ipatt]));
+    assert (!pattern[ipatt] || isSlash(pattern[ipatt]));
 
-    const bool fdirmatch = IsSlash(pattern[ipatt]);
+    const bool fdirmatch = isSlash(pattern[ipatt]);
     const bool fdescend  = fdirmatch && (pattern[ipatt+1] != 0);
 
     // (simple) (end)
@@ -900,7 +902,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
     // Append slash if needed.
 
-    if ((pathend > m_path) && !IsSlash(pathend[-1]))
+    if ((pathend > m_path) && !isSlash(pathend[-1]))
     {   pathend = AppendPath (pathend, c_slashstr);
         if (!pathend) return;          // Bail out if the append failed.
     }
