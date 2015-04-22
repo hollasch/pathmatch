@@ -22,6 +22,9 @@
 #include <windows.h>
 
 
+namespace PathMatch {
+
+
     // Standalone Function Declarations
 
 // Wildcard comparison test. Case insensitive.
@@ -140,3 +143,5 @@ class PathMatcher
         return (str[0]==L'.') && (str[1]==L'.') && (!str[2] || IsSlash(str[2]));
     }
 };
+
+}; // Namespace PathMatch

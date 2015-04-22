@@ -25,7 +25,10 @@
 #include <assert.h>
 
 
-const wchar_t c_slash = L'\\';
+namespace PathMatch {
+
+
+static const wchar_t c_slash = L'\\';
 
 
 
@@ -889,3 +892,5 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
         return pathMatch(pattern, path);
     }
 }
+
+}; // Namespace PathMatch
