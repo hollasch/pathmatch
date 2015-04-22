@@ -31,17 +31,53 @@
 
 static const wchar_t c_slash = L'\\';
 
-static inline bool entryIsADir (WIN32_FIND_DATA &finddata)
+static bool entryIsADir (WIN32_FIND_DATA &finddata)
 {
     // Returns true if the current directory entry is a directory.
     return 0 != (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 
-static inline bool isDotsDir (const wchar_t *str)
+static bool isDotsDir (const wchar_t *str)
 {
     // Return true if the string is either "." or ".."
     return (str[0] == L'.') && (!str[1] || ((str[1] == L'.') && !str[2]));
+}
+
+
+static bool IsEllipsis (const wchar_t *str)
+{
+    // Return true if and only if the string begins with "...".
+    return (str[0] == L'.') && (str[1] == L'.') && (str[2] == L'.');
+}
+
+
+static bool IsMultiWildStr (const wchar_t * str)
+{
+    // Return true if and only if the string begins with a wildcard that matches
+    // multiple characters ("*" or "...").
+    return (*str == L'*') || IsEllipsis(str);
+}
+
+
+static bool IsWildStr (const wchar_t * str)
+{
+    // Return true if and only if the string begins with a wildcard.
+    return (*str == L'?') || IsMultiWildStr(str);
+}
+
+
+static bool IsSlash (const wchar_t c)
+{
+    // Return true if and only if the character is a forward or backward slash.
+    return ((c == L'/') || (c == L'\\'));
+}
+
+
+static bool IsUpDir (const wchar_t *str)
+{
+    // Return true if string begins with parent ("..") subpath.
+    return (str[0]==L'.') && (str[1]==L'.') && (!str[2] || IsSlash(str[2]));
 }
 
 
