@@ -29,14 +29,13 @@
 // =================================================================================================
 // Local Helper Functions
 
+static const wchar_t c_slash = L'\\';
+
 static inline bool entryIsADir (WIN32_FIND_DATA &finddata)
 {
     // Returns true if the current directory entry is a directory.
     return 0 != (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 }
-
-
-static const wchar_t c_slash = L'\\';
 
 
 
@@ -352,37 +351,33 @@ PathMatcher::PathMatcher ()
     m_pattern (NULL),
     m_pattern_buff_size (0)
 {
-    //--------------------------------------------------------------------------
     // PathMatcher Default Constructor
-    //--------------------------------------------------------------------------
 
     m_path[0] = 0;
 }
 
-//==============================================================================
+
 
 PathMatcher::~PathMatcher ()
 {
-    //--------------------------------------------------------------------------
     // PathMatcher Destructor
-    //--------------------------------------------------------------------------
 
     delete m_pattern;
 }
 
-//==============================================================================
+
 
 wchar_t* PathMatcher::AppendPath (wchar_t *pathend, const wchar_t *str)
 {
-    //--------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------
     // This procedure appends the current path with the specified string.
     //
-    // Parameter 'pathend' is the end of the current path (one past the last
-    // character). Parameter 'str' is the string to append.
+    // Parameter 'pathend' is the end of the current path (one past the last character). Parameter
+    // 'str' is the string to append.
     //
-    // This function  returns the new path end pointer, or null if the path
-    // buffer is not large enough to append the new entry name.
-    //--------------------------------------------------------------------------
+    // This function  returns the new path end pointer, or null if the path buffer is not large
+    // enough to append the new entry name.
+    //----------------------------------------------------------------------------------------------
 
     const size_t strlength = wcslen (str);
 
@@ -399,21 +394,20 @@ wchar_t* PathMatcher::AppendPath (wchar_t *pathend, const wchar_t *str)
     return pathend;
 }
 
-//==============================================================================
+
 
 bool PathMatcher::AllocPatternBuff (size_t requested_size)
 {
-    //--------------------------------------------------------------------------
-    // This function allocates, if necessary, the memory for the pattern buffer.
-    // If the size requested is already accomodated by the pattern buffer, no
-    // action is taken.
+    //----------------------------------------------------------------------------------------------
+    // This function allocates, if necessary, the memory for the pattern buffer. If the size
+    // requested is already accomodated by the pattern buffer, no action is taken.
     //
-    // Parameter 'requested_size' is the total buffer size needed, including the
-    // string termination token.
+    // Parameter 'requested_size' is the total buffer size needed, including the string termination
+    // token.
     //
-    // This function returns true if the buffer is ready, or false if the
-    // necessary memory could not be allocated.
-    //--------------------------------------------------------------------------
+    // This function returns true if the buffer is ready, or false if the necessary memory could not
+    //  be allocated.
+    //----------------------------------------------------------------------------------------------
 
     if (requested_size > m_pattern_buff_size)
     {
@@ -432,21 +426,19 @@ bool PathMatcher::AllocPatternBuff (size_t requested_size)
     return true;
 }
 
-//==============================================================================
+
 
 bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 {
-    //--------------------------------------------------------------------------
-    // This routine copies the given pattern into the m_pattern member field.
-    // While doing so, it collapses sequences of repeating slashes, eliminates
-    // "/./" subpaths, resolves parent subpaths ("/../"), and determines if a
-    // directory pattern (trailing slash) was specified.
+    //----------------------------------------------------------------------------------------------
+    // This routine copies the given pattern into the m_pattern member field. While doing so, it
+    // collapses sequences of repeating slashes, eliminates "/./" subpaths, resolves parent subpaths
+    // ("/../"), and determines if a directory pattern (trailing slash) was specified.
     //
     // The parameter 'pattern' is the original caller-supplied pattern.
     //
-    // This function returns false if this routine encounted an out-of-memory
-    // error.
-    //--------------------------------------------------------------------------
+    // This function returns false if this routine encounted an out-of-memory error.
+    //----------------------------------------------------------------------------------------------
 
     // Allocate the buffer needed to store the pattern.
 
@@ -461,8 +453,8 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
     while (IsSlash(*src))
         *dest++ = *src++;
 
-    // Now copy the remainder of the path. Eliminate "." subpaths, reduce
-    // repeating slashes to single slashes, and resolve ".." portions.
+    // Now copy the remainder of the path. Eliminate "." subpaths, reduce repeating slashes to
+    // single slashes, and resolve ".." portions.
 
     while (*src)
     {
@@ -478,9 +470,9 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
             if (atStart)
             {
-                // If the pattern is just "." or "./" (for any number of
-                // tailing slashes), then just use "." as the pattern. If it is
-                // just prefixed with "./", then skip that and continue.
+                // If the pattern is just "." or "./" (for any number of tailing slashes), then
+                // just use "." as the pattern. If it is just prefixed with "./", then skip that
+                // and continue.
 
                 if (*src == 0)
                 {   *dest++ = L'.';
@@ -489,17 +481,16 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
             }
             else if (*src == 0)
             {
-                // If the pattern ends in "." or "./" (for any number of
-                // trailing slashes), then flag the search as directories-only
-                // and zap the prior slash.
+                // If the pattern ends in "." or "./" (for any number of trailing slashes), then
+                // flag the search as directories-only and zap the prior slash.
 
                 --dest;
                 m_dirsonly = true;
             }
             else
             {
-                // We've encountered a "./" in the middle of a path. In this
-                // case, just skip the copy.
+                // We've encountered a "./" in the middle of a path. In this case, just skip
+                // the copy.
             }
         }
         else if (IsSlash(*src))
@@ -517,9 +508,8 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
         }
         else if (IsUpDir(src))
         {
-            // If we encounter a "../" in the middle of a pattern, then erase
-            // the prior parent directory if possible, otherwise append the
-            // "../" substring.
+            // If we encounter a "../" in the middle of a pattern, then erase the prior parent
+            // directory if possible, otherwise append the "../" substring.
 
             // Skip forward in the source string past all trailing slashes.
 
@@ -527,7 +517,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
                 continue;
 
             const size_t destlen = dest - m_pattern;   // Current pattern length
-            wchar_t* parent = NULL;                 // Candidate parent portion
+            wchar_t* parent = NULL;                    // Candidate parent portion
 
             if ((destlen >= 2) && IsSlash(dest[-1]) && !IsSlash(dest[-2]))
             {
@@ -538,13 +528,13 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
                 while ((parent > m_pattern) && !IsSlash(*parent))
                     --parent;
 
-                // Move past the prior leading slash if necessary (if the parent
-                // directory isn't the first subdirectory in the path).
+                // Move past the prior leading slash if necessary (if the parent directory isn't
+                // the first subdirectory in the path).
 
                 if (IsSlash(*parent)) ++parent;
 
-                // If the parent directory is already a "../", then just append
-                // the current up directory to the last one.
+                // If the parent directory is already a "../", then just append the current up
+                // directory to the last one.
 
                 if (IsUpDir(parent))
                     parent = NULL;
@@ -561,8 +551,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
         }
         else
         {
-            // If no special cases, then just copy up till the next slash or end
-            // of pattern.
+            // If no special cases, then just copy up till the next slash or end of pattern.
 
             while (*src && !IsSlash(*src))
                 *dest++ = *src++;
@@ -576,25 +565,24 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
     return true;
 }
 
-//==============================================================================
+
 
 bool PathMatcher::Match (
     const wchar_t*     path_pattern,
     MatchTreeCallback* callback_func,
     void*              userdata)
 {
-    //--------------------------------------------------------------------------
-    // This function walks a directory tree according to the given wildcard
-    // pattern, and calls the specified callback function for each matching
-    // entry.
+    //----------------------------------------------------------------------------------------------
+    // This function walks a directory tree according to the given wildcard pattern, and calls the
+    // specified callback function for each matching entry.
     //
     // 'path_pattern' is the pattern to match against tree entries.
     // 'callback_func' is the callback function for each matching entry.
     // 'userdata' is the user data to be passed along to callback function.
     //
-    // This function returns true if the function successfully completes the
-    // search, otherwise false.
-    //--------------------------------------------------------------------------
+    // This function returns true if the function successfully completes the search, otherwise
+    // false.
+    //----------------------------------------------------------------------------------------------
 
     if (!callback_func)      // Bail out if the user didn't provide a
         return false;        // callback function.
@@ -602,22 +590,22 @@ bool PathMatcher::Match (
     m_callback = callback_func;
     m_cbdata = userdata;
 
-    // Copy the groomed pattern (see comments for CopyGroomedPattern) into the
-    // appropriate member fields.
+    // Copy the groomed pattern (see comments for CopyGroomedPattern) into the appropriate member
+    // fields.
 
     if (!CopyGroomedPattern(path_pattern))
         return false;
 
-    // We will divide the path_pattern up into two parts: the root path, and the
-    // remaining pattern. For example, "C:/foo/.../bar*" would be divided up
-    // into a root of "C:/foo" and a pattern of ".../bar*".
+    // We will divide the path_pattern up into two parts: the root path, and the remaining pattern.
+    // For example, "C:/foo/.../bar*" would be divided up into a root of "C:/foo" and a pattern of
+    // ".../bar*".
 
     wchar_t *rootend   = m_pattern;
     wchar_t *wildstart = m_pattern;
     wchar_t *ptr       = m_pattern;
 
-    // Locate the end of the root portion of the file pattern, and the start of
-    // the wildcard pattern.
+    // Locate the end of the root portion of the file pattern, and the start of the wildcard
+    // pattern.
 
     for (; *ptr; ++ptr)
     {
@@ -632,8 +620,8 @@ bool PathMatcher::Match (
         }
     }
 
-    // If the supplied pattern has no specific root directory, then just set the
-    // root directory to the current directory.
+    // If the supplied pattern has no specific root directory, then just set the root directory to
+    // the current directory.
 
     size_t rootlen;    // Length of the root path string.
 
@@ -657,30 +645,28 @@ bool PathMatcher::Match (
     return true;
 }
 
-//==============================================================================
+
 
 void PathMatcher::MatchDir (
     wchar_t*       pathend,
     const wchar_t* pattern)
 {
-    //--------------------------------------------------------------------------
-    // This procedure matches a substring pattern against a given root
-    // directory. Each matching entry in the tree will yield a call back to the
-    // specified function, along with given user data. Note that the path string
-    // buffer will be used to pass back matching entries to the callback
-    // function.
+    //----------------------------------------------------------------------------------------------
+    // This procedure matches a substring pattern against a given root directory. Each matching
+    // entry in the tree will yield a call back to the specified function, along with given user
+    // data. Note that the path string buffer will be used to pass back matching entries to the
+    // callback function.
     //
     // 'pathend' is the end of the current path (one past the last character)
     // 'pattern is the pattern against which to match directory entries.
-    //--------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------
 
     // If the pattern is null, then just return.
 
     if (!pattern || !*pattern) return;
 
-    // Characterize the type of pattern matching we'll be doing in the current
-    // directory. Scan forward to find the first of the end of the pattern, a
-    // slash, or an ellipsis.
+    // Characterize the type of pattern matching we'll be doing in the current directory. Scan
+    // forward to find the first of the end of the pattern, a slash, or an ellipsis.
 
     int  ipatt = 0;
     bool fliteral = true;
@@ -695,8 +681,8 @@ void PathMatcher::MatchDir (
         ++ ipatt;
     }
 
-    // If the current pattern subdirectory contains an ellipsis, then handle the
-    // remainder of the pattern and return.
+    // If the current pattern subdirectory contains an ellipsis, then handle the remainder of the
+    // pattern and return.
 
     if (IsEllipsis(pattern + ipatt))
     {
@@ -720,16 +706,16 @@ void PathMatcher::MatchDir (
         return;
     }
 
-    // If we have a literal subdirectory name (or filename), then just provide
-    // that name to the find-file functions.
+    // If we have a literal subdirectory name (or filename), then just provide that name to the
+    // find-file functions.
 
     errno_t retval = S_OK;    // General Return Value
 
     if (fliteral)
         retval = wcsncpy_s (pathend, PathSpaceLeft(pathend), pattern, ipatt);
 
-    // If there's a wildcard subdirectory or file name, then enumerate all
-    // directory entries and filter the results.
+    // If there's a wildcard subdirectory or file name, then enumerate all directory entries and
+    // filter the results.
 
     if (!fliteral || FAILED(retval))
     {   pathend[0] = L'*';
@@ -749,8 +735,8 @@ void PathMatcher::MatchDir (
             if (!fliteral && !wildComp (subpattern, finddata.cFileName))
                 continue;
 
-            // Skip files if the pattern ended in a slash or if the original
-            // pattern specified directories only.
+            // Skip files if the pattern ended in a slash or if the original pattern specified
+            // directories only.
 
             if ((m_dirsonly || fdirmatch) && !entryIsADir(finddata))
             {
@@ -787,21 +773,20 @@ void PathMatcher::MatchDir (
     return;
 }
 
-//==============================================================================
+
 
 void PathMatcher::HandleEllipsisSubpath (
     wchar_t       *pathend,
     const wchar_t *pattern,
     int            ipatt)
 {
-    //--------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------
     // This function handles subdirectories that contain ellipses.
     //
-    // The parameter 'pathend' points to one past the last character.
-    // The 'pattern' parameter is a pointer to the beginning of the current
-    // subdirectory of the full pattern. Finally, 'ipatt' is an integer offset
-    // from pattern to beginning of the ellipsis.
-    //--------------------------------------------------------------------------
+    // The parameter 'pathend' points to one past the last character. The 'pattern' parameter is a
+    // pointer to the beginning of the current subdirectory of the full pattern. Finally, 'ipatt' is
+    // an integer offset from pattern to beginning of the ellipsis.
+    //----------------------------------------------------------------------------------------------
 
     wchar_t *ellipsis_prefix = NULL;    // Pattern Filter for Prefixed Ellipses
 
@@ -816,9 +801,8 @@ void PathMatcher::HandleEllipsisSubpath (
         m_ellpattern = pattern;
         m_ellpath    = pathend;
 
-        // If the ellipsis is prefixed with a pattern, then we want to save the
-        // pattern for filtering of candidate directory entries by the FetchAll
-        // routine.
+        // If the ellipsis is prefixed with a pattern, then we want to save the pattern for
+        // filtering of candidate directory entries by the FetchAll routine.
 
         if (ipatt > 0)
         {
@@ -843,22 +827,21 @@ void PathMatcher::HandleEllipsisSubpath (
     return;
 }
 
-//==============================================================================
+
 
 void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 {
-    //--------------------------------------------------------------------------
-    // This procedure is called when an ellipsis is encountered, and recursively
-    // fetches all tree entries and optionally matches against a pattern.
+    //----------------------------------------------------------------------------------------------
+    // This procedure is called when an ellipsis is encountered, and recursively fetches all tree
+    // entries and optionally matches against a pattern.
     //
     // 'pathend' is the end of the current path (one past last character)
     //
-    // 'ellipsis_prefix' is the pattern that prefixes the ellipsis, followed by
-    // an asterisk. It will be used to filter directory entries for subsequent
-    // ellipsis pattern matching.
+    // 'ellipsis_prefix' is the pattern that prefixes the ellipsis, followed by an asterisk. It will
+    // be used to filter directory entries for subsequent ellipsis pattern matching.
     //
     // This function silently returns on error.
-    //--------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------
 
     static const wchar_t c_slashstr[] = { c_slash, 0 };
 
@@ -892,8 +875,8 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
         if (m_dirsonly && !entryIsADir(finddata))
             continue;
 
-        // If there's an ellipsis prefix, then ensure first that we match
-        // against it before descending further.
+        // If there's an ellipsis prefix, then ensure first that we match against it before
+        // descending further.
 
         if (ellipsis_prefix && !wildComp (ellipsis_prefix, finddata.cFileName))
             continue;
