@@ -25,6 +25,18 @@
 #include <assert.h>
 
 
+
+// =================================================================================================
+// Local Helper Functions
+
+static inline bool entryIsADir (WIN32_FIND_DATA &finddata)
+{
+    // Returns true if the current directory entry is a directory.
+    return 0 != (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+
+
 namespace PathMatch {
 
 
@@ -443,7 +455,7 @@ void PathMatcher::MatchDir (
             // Skip files if the pattern ended in a slash or if the original
             // pattern specified directories only.
 
-            if ((m_dirsonly || fdirmatch) && !FEntryIsDir(finddata))
+            if ((m_dirsonly || fdirmatch) && !entryIsADir(finddata))
             {
                 // Do nothing.
             }
@@ -580,7 +592,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
         // Skip file entries if we're only looking for directories.
 
-        if (m_dirsonly && !FEntryIsDir(finddata))
+        if (m_dirsonly && !entryIsADir(finddata))
             continue;
 
         // If there's an ellipsis prefix, then ensure first that we match
@@ -599,7 +611,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
                 return;
         }
 
-        if (FEntryIsDir(finddata))
+        if (entryIsADir(finddata))
             FetchAll (pathend_new, NULL);
 
     } while (FindNextFile (find_handle, &finddata));

@@ -88,7 +88,8 @@ class PathMatcher
 
     bool Match (const wchar_t *pattern, MatchTreeCallback* callback, void* userdata);
 
-  private:
+
+  private:   // Private Member Variables
 
     MatchTreeCallback* m_callback;    // Match Callback Function
     void*              m_cbdata;      // Callback Function Data
@@ -103,7 +104,8 @@ class PathMatcher
     const wchar_t *m_ellpattern;      // Ellipsis Pattern
     wchar_t       *m_ellpath;         // Path part to match against ellipsis pattern
 
-  private:    // Private Methods
+
+  private:   // Private Methods
 
     bool AllocPatternBuff (size_t requested_size);
 
@@ -113,12 +115,6 @@ class PathMatcher
 
     void MatchDir (wchar_t* pathend, const wchar_t* pattern);
     void FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix);
-
-    // Returns true if the current directory entry is a directory.
-
-    inline bool FEntryIsDir (WIN32_FIND_DATA &finddata)
-    {   return 0 != (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-    }
 
     wchar_t* AppendPath (wchar_t *pathend, const wchar_t *str);
 
