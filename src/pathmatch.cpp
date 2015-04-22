@@ -24,7 +24,7 @@ using namespace PathMatch;
 
     // Usage Information
 
-const wchar_t usage[] =
+static const wchar_t usage[] =
     L"\n"
     L"pathmatch v005 / 2007-12-03 / Steve Hollasch <steve@hollasch.net>\n"
     L"pathmatch: Report files and directories matching the specified pattern\n"
@@ -52,7 +52,7 @@ const wchar_t usage[] =
     L"\n";
 
 
-MatchTreeCB mtcallback;    // Matching Entry Callback Routine
+MatchTreeCallback mtcallback;    // Matching Entry Callback Routine
 
     // The ReportOpts structure holds the entry options for use by the callback
     // routine.

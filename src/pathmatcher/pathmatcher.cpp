@@ -270,9 +270,9 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 //==============================================================================
 
 bool PathMatcher::Match (
-    const wchar_t*  path_pattern,
-    MatchTreeCB*    callback_func,
-    void*           userdata)
+    const wchar_t*     path_pattern,
+    MatchTreeCallback* callback_func,
+    void*              userdata)
 {
     //--------------------------------------------------------------------------
     // This function walks a directory tree according to the given wildcard

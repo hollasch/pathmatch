@@ -38,6 +38,7 @@ bool wildCompCaseSensitive (const wchar_t *pattern, const wchar_t *string);
 bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
 
+
     // Function Definitions
 
 // Return true if and only if the string begins with "...".
@@ -67,7 +68,7 @@ inline bool IsSlash (const wchar_t c)
 
 
 // The callback function signature that PathMatcher uses to report back all matching entries.
-typedef bool (MatchTreeCB) (const wchar_t* entry, const WIN32_FIND_DATA& filedata, void* userdata);
+typedef bool (MatchTreeCallback) (const wchar_t* entry, const WIN32_FIND_DATA& filedata, void* userdata);
 
 
 class PathMatcher
@@ -85,14 +86,14 @@ class PathMatcher
 
     // The main match procedure.
 
-    bool Match (const wchar_t *pattern, MatchTreeCB* callback, void* userdata);
+    bool Match (const wchar_t *pattern, MatchTreeCallback* callback, void* userdata);
 
   private:
 
-    MatchTreeCB* m_callback;          // Match Callback Function
-    void*        m_cbdata;            // Callback Function Data
+    MatchTreeCallback* m_callback;    // Match Callback Function
+    void*              m_cbdata;      // Callback Function Data
 
-    wchar_t  m_path [_MAX_PATH+1];    // Current path
+    wchar_t  m_path[_MAX_PATH+1];     // Current path
 
     wchar_t *m_pattern;               // Wildcarded portion of the given pattern
     size_t   m_pattern_buff_size;     // Size of the pattern buffer.
