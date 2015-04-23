@@ -89,8 +89,9 @@ int wmain (int argc, wchar_t *argv[])
     // Main
     //==========================================================================
 
-    PathMatcher matcher;           // PathMatcher Object
-    ReportOpts  report_opts;       // Options for callback routine
+    FileSystemProxy fsProxy;           // File System Proxy Object
+    PathMatcher     matcher(fsProxy);  // PathMatcher Object
+    ReportOpts      report_opts;       // Options for callback routine
 
     report_opts.slashchar = L'\\'; // Default slashes are backward.
     report_opts.fullpath  = false; // Default to relative paths.

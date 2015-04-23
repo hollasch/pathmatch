@@ -387,8 +387,9 @@ static bool isUpDir (const wchar_t *str)
     // PathMatcher Implementation
     // ============================
 
-PathMatcher::PathMatcher ()
-  : m_callback (NULL),
+PathMatcher::PathMatcher (FileSystemProxy &fsProxy)
+  : m_fsProxy(fsProxy),
+    m_callback (NULL),
     m_cbdata (NULL),
     m_dirsonly (false),
     m_ellpath (NULL),

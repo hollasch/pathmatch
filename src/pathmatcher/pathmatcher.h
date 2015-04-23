@@ -38,6 +38,12 @@ bool wildCompCaseSensitive (const wchar_t *pattern, const wchar_t *string);
 bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
 
+class FileSystemProxy {
+  public:
+    FileSystemProxy() {}
+    ~FileSystemProxy() {}
+};
+
 
 // The callback function signature that PathMatcher uses to report back all matching entries.
 typedef bool (MatchTreeCallback) (const wchar_t* entry, const WIN32_FIND_DATA& filedata, void* userdata);
@@ -52,8 +58,8 @@ class PathMatcher
 
   public:
 
-     PathMatcher ();
-    ~PathMatcher ();
+    PathMatcher (FileSystemProxy &fsProxy);
+    ~PathMatcher();
 
     // The main match procedure.
 
@@ -61,6 +67,8 @@ class PathMatcher
 
 
   private:   // Private Member Variables
+
+    FileSystemProxy&   m_fsProxy;     // File System Proxy
 
     MatchTreeCallback* m_callback;    // Match Callback Function
     void*              m_cbdata;      // Callback Function Data
