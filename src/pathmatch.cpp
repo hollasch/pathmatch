@@ -21,6 +21,7 @@
 
 using namespace std;
 using namespace PathMatch;
+using namespace FileSystemProxy;
 
     // Usage Information
 
@@ -89,9 +90,9 @@ int wmain (int argc, wchar_t *argv[])
     // Main
     //==========================================================================
 
-    FileSystemProxy fsProxy;           // File System Proxy Object
-    PathMatcher     matcher(fsProxy);  // PathMatcher Object
-    ReportOpts      report_opts;       // Options for callback routine
+    FileSysProxy fsProxy;           // File System Proxy Object
+    PathMatcher  matcher(fsProxy);  // PathMatcher Object
+    ReportOpts   report_opts;       // Options for callback routine
 
     report_opts.slashchar = L'\\'; // Default slashes are backward.
     report_opts.fullpath  = false; // Default to relative paths.

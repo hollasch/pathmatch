@@ -32,6 +32,8 @@
 
 namespace PathMatch {
 
+using namespace FileSystemProxy;
+
 
 
 // =================================================================================================
@@ -387,7 +389,7 @@ static bool isUpDir (const wchar_t *str)
     // PathMatcher Implementation
     // ============================
 
-PathMatcher::PathMatcher (FileSystemProxy &fsProxy)
+PathMatcher::PathMatcher (FileSysProxy &fsProxy)
   : m_fsProxy(fsProxy),
     m_callback (NULL),
     m_cbdata (NULL),

@@ -15,12 +15,16 @@
 // the License.
 //==================================================================================================
 
+#ifndef _pathmatcher_h
+#define _pathmatcher_h
+
     // Includes
 
 #include <io.h>
 #include <stdlib.h>
 #include <windows.h>
 #include <string>
+#include <fileSystemProxy.h>
 
 using namespace std;
 
@@ -42,64 +46,11 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
 
 
-class DirectoryIterator {
-
-  public:
-    DirectoryIterator(const wstring path)
-      : m_started(false)
-    {
-        m_findHandle = FindFirstFile(path.c_str(), &m_findData);
-    }
-
-    ~DirectoryIterator()
-    {
-        FindClose (m_findHandle);
-    }
-
-    // Advance to first/next entry.
-    bool next()
-    {
-        if (m_started)
-            return 0 != FindNextFile(m_findHandle, &m_findData);
-        
-        m_started = true;
-        return m_findHandle != INVALID_HANDLE_VALUE;
-    }
-
-    // True => current entry is a directory.
-    bool isDirectory() const
-    {
-        return 0 != (m_findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-    }
-
-    const wchar_t* name() const
-    {
-        return m_findData.cFileName;
-    }
-
-
-  private:
-    bool            m_started;      // True => directory iteration started
-    HANDLE          m_findHandle;   // Directory Find Context
-    WIN32_FIND_DATA m_findData;     // Directory Find Entry
-};
-
-
-
-class FileSystemProxy {
-
-  public:
-
-    FileSystemProxy() {}
-    ~FileSystemProxy() {}
-
-    size_t MaxPath() const { return _MAX_PATH; }
-};
-
-
-
 // The callback function signature that PathMatcher uses to report back all matching entries.
-typedef bool (MatchTreeCallback) (const wchar_t* entry, const DirectoryIterator& fileData, void* userData);
+typedef bool (MatchTreeCallback) (
+    const wchar_t* entry,
+    const FileSystemProxy::DirectoryIterator& fileData,
+    void* userData);
 
 class PathMatcher
 {
@@ -111,7 +62,7 @@ class PathMatcher
 
   public:
 
-    PathMatcher (FileSystemProxy &fsProxy);
+    PathMatcher (FileSystemProxy::FileSysProxy &fsProxy);
     ~PathMatcher();
 
     // The main match procedure.
@@ -121,7 +72,7 @@ class PathMatcher
 
   private:   // Private Member Variables
 
-    FileSystemProxy&   m_fsProxy;     // File System Proxy
+    FileSystemProxy::FileSysProxy& m_fsProxy;     // File System Proxy
 
     MatchTreeCallback* m_callback;    // Match Callback Function
     void*              m_cbdata;      // Callback Function Data
@@ -154,3 +105,6 @@ class PathMatcher
 };
 
 }; // Namespace PathMatch
+
+
+#endif  // ifndef _pathmatcher_h
