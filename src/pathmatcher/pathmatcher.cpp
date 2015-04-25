@@ -694,7 +694,7 @@ bool PathMatcher::Match (
 
         rootlen = rootend - m_pattern;
 
-        if (FAILED(wcsncpy_s (m_path, _countof(m_path), m_pattern, rootlen)))
+        if (FAILED(wcsncpy_s (m_path, (m_fsProxy.MaxPath() + 1), m_pattern, rootlen)))
             return false;
     }
 
