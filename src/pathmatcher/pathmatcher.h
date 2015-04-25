@@ -38,11 +38,17 @@ bool wildCompCaseSensitive (const wchar_t *pattern, const wchar_t *string);
 bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
 
+
 class FileSystemProxy {
+
   public:
+
     FileSystemProxy() {}
     ~FileSystemProxy() {}
+
+    size_t MaxPath() const { return _MAX_PATH; }
 };
+
 
 
 // The callback function signature that PathMatcher uses to report back all matching entries.
@@ -73,7 +79,7 @@ class PathMatcher
     MatchTreeCallback* m_callback;    // Match Callback Function
     void*              m_cbdata;      // Callback Function Data
 
-    wchar_t  m_path[_MAX_PATH+1];     // Current path
+    wchar_t* m_path;                  // Current path
 
     wchar_t *m_pattern;               // Wildcarded portion of the given pattern
     size_t   m_pattern_buff_size;     // Size of the pattern buffer.

@@ -399,6 +399,7 @@ PathMatcher::PathMatcher (FileSystemProxy &fsProxy)
 {
     // PathMatcher Default Constructor
 
+    m_path = new wchar_t [m_fsProxy.MaxPath() + 1];
     m_path[0] = 0;
 }
 
@@ -408,7 +409,8 @@ PathMatcher::~PathMatcher ()
 {
     // PathMatcher Destructor
 
-    delete m_pattern;
+    delete[] m_path;
+    delete[] m_pattern;
 }
 
 
@@ -418,7 +420,7 @@ size_t PathMatcher::PathSpaceLeft (const wchar_t *pathend) const
     // Returns the number of characters that can be appended to the m_path
     // string, while allowing room for a terminating character.
 
-    return _countof(m_path) - (pathend - m_path) - 1;
+    return (m_fsProxy.MaxPath() + 1) - (pathend - m_path) - 1;
 }
 
 
@@ -467,7 +469,7 @@ bool PathMatcher::AllocPatternBuff (size_t requested_size)
 
     if (requested_size > m_pattern_buff_size)
     {
-        delete m_pattern;
+        delete[] m_pattern;
 
         m_pattern = new wchar_t [requested_size];
 
