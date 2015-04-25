@@ -52,7 +52,7 @@ static const wchar_t usage[] =
     L"\n";
 
 
-MatchTreeCallback mtcallback;    // Matching Entry Callback Routine
+MatchTreeCallback mtCallback;    // Matching Entry Callback Routine
 
     // The ReportOpts structure holds the entry options for use by the callback
     // routine.
@@ -146,7 +146,7 @@ int wmain (int argc, wchar_t *argv[])
 
             default:
             {
-                matcher.Match (arg, &mtcallback, &report_opts);
+                matcher.Match (arg, &mtCallback, &report_opts);
                 break;
             }
         }
@@ -165,10 +165,10 @@ static inline bool isSlash (wchar_t c)
 
 
 
-bool mtcallback (
-    const wchar_t*         entry,
-    const WIN32_FIND_DATA& filedata,
-    void*                  cbdata)
+bool mtCallback (
+    const wchar_t*           entry,
+    const DirectoryIterator& filedata,
+    void*                    cbdata)
 {
     //==========================================================================
     // mtcallback
@@ -193,7 +193,7 @@ bool mtcallback (
 
     // If we are to report only files and this entry is a directory, then return without reporting.
 
-    if (report_opts->filesonly && (filedata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+    if (report_opts->filesonly && (filedata.isDirectory()))
         return true;
 
     if (!report_opts->fullpath)

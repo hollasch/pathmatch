@@ -20,6 +20,9 @@
 #include <io.h>
 #include <stdlib.h>
 #include <windows.h>
+#include <string>
+
+using namespace std;
 
 
 namespace PathMatch {
@@ -39,6 +42,50 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
 
 
+class DirectoryIterator {
+
+  public:
+    DirectoryIterator(const wstring path)
+      : m_started(false)
+    {
+        m_findHandle = FindFirstFile(path.c_str(), &m_findData);
+    }
+
+    ~DirectoryIterator()
+    {
+        FindClose (m_findHandle);
+    }
+
+    // Advance to first/next entry.
+    bool next()
+    {
+        if (m_started)
+            return 0 != FindNextFile(m_findHandle, &m_findData);
+        
+        m_started = true;
+        return m_findHandle != INVALID_HANDLE_VALUE;
+    }
+
+    // True => current entry is a directory.
+    bool isDirectory() const
+    {
+        return 0 != (m_findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+    }
+
+    const wchar_t* name() const
+    {
+        return m_findData.cFileName;
+    }
+
+
+  private:
+    bool            m_started;      // True => directory iteration started
+    HANDLE          m_findHandle;   // Directory Find Context
+    WIN32_FIND_DATA m_findData;     // Directory Find Entry
+};
+
+
+
 class FileSystemProxy {
 
   public:
@@ -52,7 +99,7 @@ class FileSystemProxy {
 
 
 // The callback function signature that PathMatcher uses to report back all matching entries.
-typedef bool (MatchTreeCallback) (const wchar_t* entry, const WIN32_FIND_DATA& filedata, void* userdata);
+typedef bool (MatchTreeCallback) (const wchar_t* entry, const DirectoryIterator& fileData, void* userData);
 
 class PathMatcher
 {

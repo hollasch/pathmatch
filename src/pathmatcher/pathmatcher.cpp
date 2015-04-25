@@ -57,7 +57,7 @@ static bool isEllipsis (const wchar_t *str)
 }
 
 
-static bool isMultiWildStr (const wchar_t * str)
+static bool isMultiWildStr (const wchar_t* str)
 {
     // Return true if and only if the string begins with a wildcard that matches
     // multiple characters ("*" or "...").
@@ -755,12 +755,12 @@ void PathMatcher::MatchDir (
 
     // (simple) (end)
 
-    wchar_t *subpattern = new wchar_t [ipatt+1];
+    wchar_t *subPattern = new wchar_t [ipatt+1];
 
-    if (!subpattern) return;   // Bail out if out of memory.
+    if (!subPattern) return;   // Bail out if out of memory.
 
-    if (FAILED(wcsncpy_s (subpattern, ipatt+1, pattern, ipatt)))
-    {   delete subpattern;
+    if (FAILED(wcsncpy_s (subPattern, ipatt+1, pattern, ipatt)))
+    {   delete[] subPattern;
         return;
     }
 
@@ -780,54 +780,48 @@ void PathMatcher::MatchDir (
         pathend[1] = 0;
     }
 
-    WIN32_FIND_DATA finddata;
-    HANDLE find_handle = FindFirstFile (m_path, &finddata);
-
-    if (find_handle != INVALID_HANDLE_VALUE)
+    for (DirectoryIterator dirEntry (m_path);  dirEntry.next();)
     {
-        do {
-            // Ignore "." and ".." entries.
+        // Ignore "." and ".." entries.
 
-            if (isDotsDir(finddata.cFileName)) continue;
+        const wchar_t *entryName = dirEntry.name();
 
-            if (!fliteral && !wildComp (subpattern, finddata.cFileName))
-                continue;
+        if (isDotsDir(entryName)) continue;
 
-            // Skip files if the pattern ended in a slash or if the original pattern specified
-            // directories only.
+        if (!fliteral && !wildComp (subPattern, entryName))
+            continue;
 
-            if ((m_dirsonly || fdirmatch) && !entryIsADir(finddata))
+        // Skip files if the pattern ended in a slash or if the original pattern specified
+        // directories only.
+
+        if ((m_dirsonly || fdirmatch) && !dirEntry.isDirectory())
+        {
+            // Do nothing.
+        }
+        else if (fdescend)
+        {
+            wchar_t *pathend_new = AppendPath (pathend, entryName);
+
+            if (!pathend_new) continue;
+
+            *pathend_new++ = c_slash;
+            *pathend_new   = 0;
+
+            MatchDir (pathend_new, pattern + ipatt + 1);
+        }
+        else
+        {
+            // Construct full relative entry path.
+
+            if (AppendPath(pathend, entryName))
             {
-                // Do nothing.
+                if (!m_callback (m_path, dirEntry, m_cbdata))
+                    break;
             }
-            else if (fdescend)
-            {
-                wchar_t *pathend_new = AppendPath (pathend, finddata.cFileName);
-
-                if (!pathend_new) continue;
-
-                *pathend_new++ = c_slash;
-                *pathend_new   = 0;
-
-                MatchDir (pathend_new, pattern + ipatt + 1);
-            }
-            else
-            {
-                // Construct full relative entry path.
-
-                if (AppendPath(pathend, finddata.cFileName))
-                {
-                    if (!m_callback (m_path, finddata, m_cbdata))
-                        break;
-                }
-            }
-
-        } while (FindNextFile (find_handle, &finddata));
-
-        FindClose (find_handle);
+        }
     }
 
-    delete subpattern;
+    delete[] subPattern;
     return;
 }
 
@@ -917,44 +911,38 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
     pathend[0] = L'*';
     pathend[1] = 0;
 
-    WIN32_FIND_DATA finddata;
-    HANDLE find_handle = FindFirstFile (m_path, &finddata);
-
-    if (find_handle == INVALID_HANDLE_VALUE)
-        return;
-
-    do {
+    for (DirectoryIterator dirEntry (m_path);  dirEntry.next();)
+    {
         // Ignore "." and ".." entries.
 
-        if (isDotsDir(finddata.cFileName)) continue;
+        const wchar_t* fileName = dirEntry.name();
+
+        if (isDotsDir(fileName)) continue;
 
         // Skip file entries if we're only looking for directories.
 
-        if (m_dirsonly && !entryIsADir(finddata))
+        if (m_dirsonly && !dirEntry.isDirectory())
             continue;
 
         // If there's an ellipsis prefix, then ensure first that we match against it before
         // descending further.
 
-        if (ellipsis_prefix && !wildComp (ellipsis_prefix, finddata.cFileName))
+        if (ellipsis_prefix && !wildComp (ellipsis_prefix, fileName))
             continue;
 
-        wchar_t* pathend_new = AppendPath (pathend, finddata.cFileName);
+        wchar_t* pathend_new = AppendPath (pathend, fileName);
 
         if (!pathend_new) break;
 
         if (!m_ellpattern || pathMatch(m_ellpattern, m_ellpath))
         {
-            if (!m_callback (m_path, finddata, m_cbdata))
+            if (!m_callback (m_path, dirEntry, m_cbdata))
                 return;
         }
 
-        if (entryIsADir(finddata))
+        if (dirEntry.isDirectory())
             FetchAll (pathend_new, NULL);
-
-    } while (FindNextFile (find_handle, &finddata));
-
-    FindClose (find_handle);
+    }
 }
 
 
