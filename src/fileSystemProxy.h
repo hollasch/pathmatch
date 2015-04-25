@@ -33,38 +33,17 @@ namespace FileSystemProxy {
 class DirectoryIterator {
 
   public:
-    DirectoryIterator(const std::wstring path)
-      : m_started(false)
-    {
-        m_findHandle = FindFirstFile(path.c_str(), &m_findData);
-    }
-
-    ~DirectoryIterator()
-    {
-        FindClose (m_findHandle);
-    }
+    DirectoryIterator(const std::wstring path);
+    ~DirectoryIterator();
 
     // Advance to first/next entry.
-    bool next()
-    {
-        if (m_started)
-            return 0 != FindNextFile(m_findHandle, &m_findData);
-        
-        m_started = true;
-        return m_findHandle != INVALID_HANDLE_VALUE;
-    }
+    bool next();
 
     // True => current entry is a directory.
-    bool isDirectory() const
-    {
-        return 0 != (m_findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-    }
+    bool isDirectory() const;
 
-    const wchar_t* name() const
-    {
-        return m_findData.cFileName;
-    }
-
+    // Return name of the current entry.
+    const wchar_t* name() const;
 
   private:
     bool            m_started;      // True => directory iteration started
@@ -81,7 +60,7 @@ class FileSysProxy {
     FileSysProxy() {}
     ~FileSysProxy() {}
 
-    size_t MaxPath() const { return _MAX_PATH; }
+    inline size_t MaxPath() const { return _MAX_PATH; }
 };
 
 
