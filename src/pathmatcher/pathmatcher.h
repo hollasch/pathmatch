@@ -29,6 +29,8 @@
 #include <fileSystemProxy.h>
 
 using namespace std;
+using FileSystemProxy::DirectoryIterator;
+using FileSystemProxy::FileSysProxy;
 
 
 namespace PathMatch {
@@ -51,7 +53,7 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 // The callback function signature that PathMatcher uses to report back all matching entries.
 typedef bool (MatchTreeCallback) (
     const wchar_t* entry,
-    const FileSystemProxy::DirectoryIterator& fileData,
+    const DirectoryIterator& fileData,
     void* userData);
 
 class PathMatcher
@@ -64,7 +66,7 @@ class PathMatcher
 
   public:
 
-    PathMatcher (FileSystemProxy::FileSysProxy &fsProxy);
+    PathMatcher (FileSysProxy &fsProxy);
     ~PathMatcher();
 
     // The main match procedure.
@@ -74,8 +76,7 @@ class PathMatcher
 
   private:   // Private Member Variables
 
-    FileSystemProxy::FileSysProxy& m_fsProxy;     // File System Proxy
-
+    FileSysProxy&      m_fsProxy;     // File System Proxy
     MatchTreeCallback* m_callback;    // Match Callback Function
     void*              m_cbdata;      // Callback Function Data
 
