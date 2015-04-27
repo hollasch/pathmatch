@@ -208,7 +208,7 @@ bool mtCallback (
         // function to do so. If this is not possible, then emit an error message and halt matching
         // entry enumeration.
 
-        if (!_wfullpath(fullpath,entry,_MAX_PATH))
+        if (!_wfullpath(fullpath, entry, _MAX_PATH))
         {
             wcerr << L"pathmatch: Unable to convert \""
                   << entry

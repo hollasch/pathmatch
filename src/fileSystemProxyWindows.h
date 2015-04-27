@@ -1,7 +1,7 @@
 //==================================================================================================
 // FileSystemProxyWindows
 //
-// Windows file system proxy, using the FileSystemProxy base.
+//     Windows file system proxy, using the FileSystemProxy base.
 //
 // _________________________________________________________________________________________________
 // Copyright 2015 Steve Hollasch
@@ -26,15 +26,13 @@
 #include <windows.h>
 #include <string>
 
-using std::wstring;
-
 
 namespace FileSystemProxy {
 
 
 class DirectoryIteratorWindows : public DirectoryIterator {
   public:
-    DirectoryIteratorWindows (const wstring path);
+    DirectoryIteratorWindows (const std::wstring path);
     ~DirectoryIteratorWindows();
 
     // Advance to first/next entry.
