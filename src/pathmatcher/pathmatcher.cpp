@@ -393,12 +393,12 @@ static bool isUpDir (const wchar_t *str)
 PathMatcher::PathMatcher (FileSysProxy &fsProxy)
   : m_fsProxy(fsProxy),
     m_callback (NULL),
-    m_cbdata (NULL),
-    m_dirsonly (false),
-    m_ellpath (NULL),
-    m_ellpattern (NULL),
+    m_callbackData (NULL),
+    m_dirsOnly (false),
+    m_ellipsisPath (NULL),
+    m_ellipsisPattern (NULL),
     m_pattern (NULL),
-    m_pattern_buff_size (0)
+    m_patternBufferSize (0)
 {
     // PathMatcher Default Constructor
 
@@ -457,31 +457,31 @@ wchar_t* PathMatcher::AppendPath (wchar_t *pathend, const wchar_t *str)
 
 
 
-bool PathMatcher::AllocPatternBuff (size_t requested_size)
+bool PathMatcher::AllocPatternBuff (size_t requestedSize)
 {
     //----------------------------------------------------------------------------------------------
     // This function allocates, if necessary, the memory for the pattern buffer. If the size
     // requested is already accomodated by the pattern buffer, no action is taken.
     //
-    // Parameter 'requested_size' is the total buffer size needed, including the string termination
+    // Parameter 'requestedSize' is the total buffer size needed, including the string termination
     // token.
     //
     // This function returns true if the buffer is ready, or false if the necessary memory could not
     //  be allocated.
     //----------------------------------------------------------------------------------------------
 
-    if (requested_size > m_pattern_buff_size)
+    if (requestedSize > m_patternBufferSize)
     {
         delete[] m_pattern;
 
-        m_pattern = new wchar_t [requested_size];
+        m_pattern = new wchar_t [requestedSize];
 
         if (!m_pattern)
-        {   m_pattern_buff_size = 0;
+        {   m_patternBufferSize = 0;
             return false;
         }
 
-        m_pattern_buff_size = requested_size;
+        m_patternBufferSize = requestedSize;
     }
 
     return true;
@@ -537,7 +537,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
                 if (*src == 0)
                 {   *dest++ = L'.';
-                    m_dirsonly = true;
+                    m_dirsOnly = true;
                 }
             }
             else if (*src == 0)
@@ -546,7 +546,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
                 // flag the search as directories-only and zap the prior slash.
 
                 --dest;
-                m_dirsonly = true;
+                m_dirsOnly = true;
             }
             else
             {
@@ -558,7 +558,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
         {
             if (src[1] == 0)          // If the pattern ends in a slash, then
             {                         // record that the pattern is specifying
-                m_dirsonly = true;    // directories only.
+                m_dirsOnly = true;    // directories only.
                 ++src;
             }
             else                      // Copy one slash only.
@@ -649,7 +649,7 @@ bool PathMatcher::Match (
         return false;        // callback function.
 
     m_callback = callback_func;
-    m_cbdata = userdata;
+    m_callbackData = userdata;
 
     // Copy the groomed pattern (see comments for CopyGroomedPattern) into the appropriate member
     // fields.
@@ -799,7 +799,7 @@ void PathMatcher::MatchDir (
         // Skip files if the pattern ended in a slash or if the original pattern specified
         // directories only.
 
-        if ((m_dirsonly || fdirmatch) && !dirEntry->isDirectory())
+        if ((m_dirsOnly || fdirmatch) && !dirEntry->isDirectory())
         {
             // Do nothing.
         }
@@ -820,7 +820,7 @@ void PathMatcher::MatchDir (
 
             if (AppendPath(pathend, entryName))
             {
-                if (!m_callback (m_path, *dirEntry, m_cbdata))
+                if (!m_callback (m_path, *dirEntry, m_callbackData))
                     break;
             }
         }
@@ -851,12 +851,12 @@ void PathMatcher::HandleEllipsisSubpath (
     {
         // ...<end> - Just do a simple recursive fetch of the tree.
 
-        m_ellpattern = NULL;
+        m_ellipsisPattern = NULL;
     }
     else
     {
-        m_ellpattern = pattern;
-        m_ellpath    = pathend;
+        m_ellipsisPattern = pattern;
+        m_ellipsisPath    = pathend;
 
         // If the ellipsis is prefixed with a pattern, then we want to save the pattern for
         // filtering of candidate directory entries by the FetchAll routine.
@@ -928,7 +928,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
         // Skip file entries if we're only looking for directories.
 
-        if (m_dirsonly && !dirEntry->isDirectory())
+        if (m_dirsOnly && !dirEntry->isDirectory())
             continue;
 
         // If there's an ellipsis prefix, then ensure first that we match against it before
@@ -941,9 +941,9 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
         if (!pathend_new) break;
 
-        if (!m_ellpattern || pathMatch(m_ellpattern, m_ellpath))
+        if (!m_ellipsisPattern || pathMatch(m_ellipsisPattern, m_ellipsisPath))
         {
-            if (!m_callback (m_path, *dirEntry, m_cbdata))
+            if (!m_callback (m_path, *dirEntry, m_callbackData))
                 return;
         }
 

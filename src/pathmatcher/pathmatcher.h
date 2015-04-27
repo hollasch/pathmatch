@@ -71,40 +71,40 @@ class PathMatcher
 
     // The main match procedure.
 
-    bool Match (const wchar_t *pattern, MatchTreeCallback* callback, void* userdata);
+    bool Match (const wchar_t *pattern, MatchTreeCallback* callback, void* userData);
 
 
   private:   // Private Member Variables
 
-    FileSysProxy&      m_fsProxy;     // File System Proxy
-    MatchTreeCallback* m_callback;    // Match Callback Function
-    void*              m_cbdata;      // Callback Function Data
+    FileSysProxy&      m_fsProxy;      // File System Proxy
+    MatchTreeCallback* m_callback;     // Match Callback Function
+    void*              m_callbackData; // Callback Function Data
 
-    wchar_t* m_path;                  // Current path
+    wchar_t* m_path;                   // Current path
 
-    wchar_t *m_pattern;               // Wildcarded portion of the given pattern
-    size_t   m_pattern_buff_size;     // Size of the pattern buffer.
+    wchar_t *m_pattern;                // Wildcarded portion of the given pattern
+    size_t   m_patternBufferSize;      // Size of the pattern buffer.
 
-    bool     m_dirsonly;              // If true, report directories only
+    bool     m_dirsOnly;               // If true, report directories only
 
-    const wchar_t *m_ellpattern;      // Ellipsis Pattern
-    wchar_t       *m_ellpath;         // Path part to match against ellipsis pattern
+    const wchar_t *m_ellipsisPattern;  // Ellipsis Pattern
+    wchar_t       *m_ellipsisPath;     // Path part to match against ellipsis pattern
 
 
   private:   // Private Methods
 
-    bool AllocPatternBuff (size_t requested_size);
+    bool AllocPatternBuff (size_t requestedSize);
 
     bool CopyGroomedPattern (const wchar_t *pattern);
 
-    void HandleEllipsisSubpath (wchar_t *pathend, const wchar_t *pattern, int ipatt);
+    void HandleEllipsisSubpath (wchar_t *pathEnd, const wchar_t *pattern, int iPattern);
 
     void MatchDir (wchar_t* pathend, const wchar_t* pattern);
-    void FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix);
+    void FetchAll (wchar_t* pathend, const wchar_t* ellipsisPrefix);
 
-    wchar_t* AppendPath (wchar_t *pathend, const wchar_t *str);
+    wchar_t* AppendPath (wchar_t *pathEnd, const wchar_t *str);
 
-    size_t PathSpaceLeft (const wchar_t *pathend) const;
+    size_t PathSpaceLeft (const wchar_t *pathEnd) const;
 };
 
 }; // Namespace PathMatch
