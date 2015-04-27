@@ -402,7 +402,7 @@ PathMatcher::PathMatcher (FileSysProxy &fsProxy)
 {
     // PathMatcher Default Constructor
 
-    m_path = new wchar_t [m_fsProxy.maxPath() + 1];
+    m_path = new wchar_t [m_fsProxy.maxPathLength() + 1];
     m_path[0] = 0;
 }
 
@@ -423,7 +423,7 @@ size_t PathMatcher::PathSpaceLeft (const wchar_t *pathend) const
     // Returns the number of characters that can be appended to the m_path
     // string, while allowing room for a terminating character.
 
-    return (m_fsProxy.maxPath() + 1) - (pathend - m_path) - 1;
+    return (m_fsProxy.maxPathLength() + 1) - (pathend - m_path) - 1;
 }
 
 
@@ -697,7 +697,7 @@ bool PathMatcher::Match (
 
         rootlen = rootend - m_pattern;
 
-        if (FAILED(wcsncpy_s (m_path, (m_fsProxy.maxPath() + 1), m_pattern, rootlen)))
+        if (FAILED(wcsncpy_s (m_path, (m_fsProxy.maxPathLength() + 1), m_pattern, rootlen)))
             return false;
     }
 

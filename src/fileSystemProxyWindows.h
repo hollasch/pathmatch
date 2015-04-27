@@ -57,7 +57,7 @@ class FileSysProxyWindows : public FileSysProxy {
   public:
     virtual ~FileSysProxyWindows() {}
 
-    virtual size_t maxPath() const { return _MAX_PATH; }
+    virtual size_t maxPathLength() const { return _MAX_PATH; }
 
     // Return a directory iterator object.
     // NOTE: User must delete this object!

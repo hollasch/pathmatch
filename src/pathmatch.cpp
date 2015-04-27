@@ -63,9 +63,10 @@ MatchTreeCallback mtCallback;    // Matching Entry Callback Routine
 
 struct ReportOpts
 {
-    wchar_t slashchar; // Forward or backward slash character to use
-    bool    fullpath;  // If true, report full path rather than default relative
-    bool    filesonly; // If true, report only files (not directories)
+    wchar_t slashchar;      // Forward or backward slash character to use
+    bool    fullpath;       // If true, report full path rather than default relative
+    bool    filesonly;      // If true, report only files (not directories)
+    size_t  maxPathLength;  // Maximum path length
 };
 
 
@@ -95,11 +96,12 @@ int wmain (int argc, wchar_t *argv[])
 
     FileSysProxyWindows fsProxy;    // File System Proxy Object
     PathMatcher  matcher(fsProxy);  // PathMatcher Object
-    ReportOpts   report_opts;       // Options for callback routine
+    ReportOpts   reportOpts;        // Options for callback routine
 
-    report_opts.slashchar = L'\\'; // Default slashes are backward.
-    report_opts.fullpath  = false; // Default to relative paths.
-    report_opts.filesonly = false; // Default to report files and directories
+    reportOpts.slashchar     = L'\\'; // Default slashes are backward.
+    reportOpts.fullpath      = false; // Default to relative paths.
+    reportOpts.filesonly     = false; // Default to report files and directories
+    reportOpts.maxPathLength = fsProxy.maxPathLength();
 
     if (argc <= 1)
     {   wcout << usage;
@@ -128,18 +130,18 @@ int wmain (int argc, wchar_t *argv[])
             }
 
             case L'a': case L'A':                // Absolute Path Option
-            {   report_opts.fullpath = true;
+            {   reportOpts.fullpath = true;
                 break;
             }
 
             case L'f': case L'F':                // Report Files Only
-            {   report_opts.filesonly = true;
+            {   reportOpts.filesonly = true;
                 break;
             }
 
             case L's': case L'S':                // Slash Direction Option
             {   if ((arg[2] == L'/') || (arg[2] == L'\\'))
-                    report_opts.slashchar = arg[2];
+                    reportOpts.slashchar = arg[2];
                 else
                 {   wcerr << L"pathmatch: Unexpected -s option (\""
                           << arg+2 << L"\").\n";
@@ -150,7 +152,7 @@ int wmain (int argc, wchar_t *argv[])
 
             default:
             {
-                matcher.Match (arg, &mtCallback, &report_opts);
+                matcher.Match (arg, &mtCallback, &reportOpts);
                 break;
             }
         }
@@ -188,19 +190,19 @@ bool mtCallback (
     //     encountered and error attempting to convert a path to a full path.
     //==========================================================================
 
-    wchar_t fullpath [_MAX_PATH + 1];  // Optional Full Path
-    const wchar_t* item = entry;       // Pointer to Matching Entry
-
     // Get the properly typed report options structure from the callback data.
 
-    const ReportOpts *report_opts = static_cast<const ReportOpts*>(cbdata);
+    const ReportOpts *reportOpts = static_cast<const ReportOpts*>(cbdata);
+
+    auto fullPath = new wchar_t [reportOpts->maxPathLength + 1];  // Optional Full Path
+    const wchar_t* item = entry;       // Pointer to Matching Entry
 
     // If we are to report only files and this entry is a directory, then return without reporting.
 
-    if (report_opts->filesonly && (filedata.isDirectory()))
+    if (reportOpts->filesonly && (filedata.isDirectory()))
         return true;
 
-    if (!report_opts->fullpath)
+    if (!reportOpts->fullpath)
         item = entry;
     else
     {
@@ -208,7 +210,7 @@ bool mtCallback (
         // function to do so. If this is not possible, then emit an error message and halt matching
         // entry enumeration.
 
-        if (!_wfullpath(fullpath, entry, _MAX_PATH))
+        if (!_wfullpath(fullPath, entry, reportOpts->maxPathLength))
         {
             wcerr << L"pathmatch: Unable to convert \""
                   << entry
@@ -217,13 +219,13 @@ bool mtCallback (
             return false;
         }
 
-        item = fullpath;
+        item = fullPath;
     }
 
     // Print out the matching item, converted to the requested slash type.
 
     for (const wchar_t *ptr = item;  *ptr;  ++ptr)
-        wcout << (isSlash(*ptr) ? report_opts->slashchar : *ptr);
+        wcout << (isSlash(*ptr) ? reportOpts->slashchar : *ptr);
 
     wcout << endl;
 
