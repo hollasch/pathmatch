@@ -1,7 +1,8 @@
 //==================================================================================================
-// fileSystemProxy.cpp
+// fileSystemProxyWindows.cpp
 //
-//     This file contains the definitions for the file system proxy classes.
+//     This file contains the definitions for the file system proxy classes for the Windows file
+//     system.
 //
 // _________________________________________________________________________________________________
 // Copyright 2015 Steve Hollasch
@@ -17,7 +18,7 @@
 // the License.
 //==================================================================================================
 
-#include "fileSystemProxy.h"
+#include "fileSystemProxyWindows.h"
 #include <stdlib.h>
 #include <string>
 
@@ -28,20 +29,20 @@ using namespace FileSystemProxy;
 
 // Directory Iterator Methods
 
-DirectoryIterator::DirectoryIterator (const wstring path)
+DirectoryIteratorWindows::DirectoryIteratorWindows (const wstring path)
   : m_started(false)
 {
     m_findHandle = FindFirstFile(path.c_str(), &m_findData);
 }
 
-DirectoryIterator::~DirectoryIterator()
+DirectoryIteratorWindows::~DirectoryIteratorWindows()
 {
     FindClose (m_findHandle);
 }
 
 
 
-bool DirectoryIterator::next()
+bool DirectoryIteratorWindows::next()
 {
     // Advances the iterator to the first/next entry.
 
@@ -54,7 +55,7 @@ bool DirectoryIterator::next()
 
 
 
-bool DirectoryIterator::isDirectory() const
+bool DirectoryIteratorWindows::isDirectory() const
 {
     // Returns true if the current entry is a directory.
     return 0 != (m_findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
@@ -62,8 +63,15 @@ bool DirectoryIterator::isDirectory() const
 
 
 
-const wchar_t* DirectoryIterator::name() const
+const wchar_t* DirectoryIteratorWindows::name() const
 {
     // Returns the name of the current entry.
     return m_findData.cFileName;
+}
+
+
+
+DirectoryIterator* FileSysProxyWindows::newDirectoryIterator (const wstring path) const
+{
+    return new DirectoryIteratorWindows(path);
 }

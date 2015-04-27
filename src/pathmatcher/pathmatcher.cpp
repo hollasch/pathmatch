@@ -22,6 +22,7 @@
 #include <io.h>
 #include <string.h>
 #include <windows.h>
+#include <memory>
 
 #include <stdio.h>
 #include <assert.h>
@@ -403,7 +404,7 @@ PathMatcher::PathMatcher (FileSysProxy &fsProxy)
 {
     // PathMatcher Default Constructor
 
-    m_path = new wchar_t [m_fsProxy.MaxPath() + 1];
+    m_path = new wchar_t [m_fsProxy.maxPath() + 1];
     m_path[0] = 0;
 }
 
@@ -424,7 +425,7 @@ size_t PathMatcher::PathSpaceLeft (const wchar_t *pathend) const
     // Returns the number of characters that can be appended to the m_path
     // string, while allowing room for a terminating character.
 
-    return (m_fsProxy.MaxPath() + 1) - (pathend - m_path) - 1;
+    return (m_fsProxy.maxPath() + 1) - (pathend - m_path) - 1;
 }
 
 
@@ -698,7 +699,7 @@ bool PathMatcher::Match (
 
         rootlen = rootend - m_pattern;
 
-        if (FAILED(wcsncpy_s (m_path, (m_fsProxy.MaxPath() + 1), m_pattern, rootlen)))
+        if (FAILED(wcsncpy_s (m_path, (m_fsProxy.maxPath() + 1), m_pattern, rootlen)))
             return false;
     }
 
@@ -784,11 +785,13 @@ void PathMatcher::MatchDir (
         pathend[1] = 0;
     }
 
-    for (DirectoryIterator dirEntry (m_path);  dirEntry.next();)
+    std::unique_ptr<DirectoryIterator> dirEntry (m_fsProxy.newDirectoryIterator(m_path));
+
+    while (dirEntry->next())
     {
         // Ignore "." and ".." entries.
 
-        const wchar_t *entryName = dirEntry.name();
+        const wchar_t *entryName = dirEntry->name();
 
         if (isDotsDir(entryName)) continue;
 
@@ -798,7 +801,7 @@ void PathMatcher::MatchDir (
         // Skip files if the pattern ended in a slash or if the original pattern specified
         // directories only.
 
-        if ((m_dirsonly || fdirmatch) && !dirEntry.isDirectory())
+        if ((m_dirsonly || fdirmatch) && !dirEntry->isDirectory())
         {
             // Do nothing.
         }
@@ -819,7 +822,7 @@ void PathMatcher::MatchDir (
 
             if (AppendPath(pathend, entryName))
             {
-                if (!m_callback (m_path, dirEntry, m_cbdata))
+                if (!m_callback (m_path, *dirEntry, m_cbdata))
                     break;
             }
         }
@@ -915,17 +918,19 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
     pathend[0] = L'*';
     pathend[1] = 0;
 
-    for (DirectoryIterator dirEntry (m_path);  dirEntry.next();)
+    std::unique_ptr<DirectoryIterator> dirEntry (m_fsProxy.newDirectoryIterator(m_path));
+
+    while (dirEntry->next())
     {
         // Ignore "." and ".." entries.
 
-        const wchar_t* fileName = dirEntry.name();
+        const wchar_t* fileName = dirEntry->name();
 
         if (isDotsDir(fileName)) continue;
 
         // Skip file entries if we're only looking for directories.
 
-        if (m_dirsonly && !dirEntry.isDirectory())
+        if (m_dirsonly && !dirEntry->isDirectory())
             continue;
 
         // If there's an ellipsis prefix, then ensure first that we match against it before
@@ -940,11 +945,11 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
         if (!m_ellpattern || pathMatch(m_ellpattern, m_ellpath))
         {
-            if (!m_callback (m_path, dirEntry, m_cbdata))
+            if (!m_callback (m_path, *dirEntry, m_cbdata))
                 return;
         }
 
-        if (dirEntry.isDirectory())
+        if (dirEntry->isDirectory())
             FetchAll (pathend_new, NULL);
     }
 }

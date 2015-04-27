@@ -18,6 +18,7 @@
 //==================================================================================================
 
 #include "pathmatcher.h"
+#include "FileSystemProxyWindows.h"
 
 #include <iostream>
 
@@ -92,7 +93,7 @@ int wmain (int argc, wchar_t *argv[])
     // Main
     //==========================================================================
 
-    FileSysProxy fsProxy;           // File System Proxy Object
+    FileSysProxyWindows fsProxy;    // File System Proxy Object
     PathMatcher  matcher(fsProxy);  // PathMatcher Object
     ReportOpts   report_opts;       // Options for callback routine
 

@@ -21,7 +21,7 @@
     <ClCompile Include="..\..\src\pathmatcher\pathmatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\fileSystemProxy.cpp">
+    <ClCompile Include="..\..\src\fileSystemProxyWindows.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -30,6 +30,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\fileSystemProxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fileSystemProxyWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

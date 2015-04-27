@@ -145,7 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\fileSystemProxy.cpp" />
+    <ClCompile Include="..\..\src\fileSystemProxyWindows.cpp" />
     <ClCompile Include="..\..\src\pathmatch.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\..\src\pathmatchlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -153,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\fileSystemProxy.h" />
+    <ClInclude Include="..\..\src\fileSystemProxyWindows.h" />
     <ClInclude Include="..\..\src\pathmatcher\pathmatcher.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

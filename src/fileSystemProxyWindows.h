@@ -1,8 +1,7 @@
 //==================================================================================================
-// FileSystemProxy
+// FileSystemProxyWindows
 //
-// Declarations for the file system proxy classes. These objects proxy the file system of the
-// underlying operating system, or test harness.
+// Windows file system proxy, using the FileSystemProxy base.
 //
 // _________________________________________________________________________________________________
 // Copyright 2015 Steve Hollasch
@@ -18,52 +17,57 @@
 // the License.
 //==================================================================================================
 
-#ifndef _fileSystemProxy_h
-#define _fileSystemProxy_h
+#ifndef _fileSystemProxyWindows_h
+#define _fileSystemProxyWindows_h
 
     // Includes
 
+#include <FileSystemProxy.h>
 #include <windows.h>
 #include <string>
+
+using std::wstring;
 
 
 namespace FileSystemProxy {
 
 
-
-class DirectoryIterator {
-
+class DirectoryIteratorWindows : public DirectoryIterator {
   public:
-    DirectoryIterator() {}
-    virtual ~DirectoryIterator() {}
+    DirectoryIteratorWindows (const wstring path);
+    ~DirectoryIteratorWindows();
 
     // Advance to first/next entry.
-    virtual bool next() = 0;
+    virtual bool next();
 
     // True => current entry is a directory.
-    virtual bool isDirectory() const = 0;
+    virtual bool isDirectory() const;
 
     // Return name of the current entry.
-    virtual const wchar_t* name() const = 0;
+    virtual const wchar_t* name() const;
+
+  private:
+    bool            m_started;      // True => directory iteration started
+    HANDLE          m_findHandle;   // Directory Find Context
+    WIN32_FIND_DATA m_findData;     // Directory Find Entry
 };
 
 
 
-class FileSysProxy {
+class FileSysProxyWindows : public FileSysProxy {
 
   public:
-    virtual ~FileSysProxy() {}
+    virtual ~FileSysProxyWindows() {}
 
-    virtual size_t maxPath() const = 0;
+    virtual size_t maxPath() const { return _MAX_PATH; }
 
     // Return a directory iterator object.
     // NOTE: User must delete this object!
-    virtual DirectoryIterator* newDirectoryIterator (const std::wstring path) const = 0;
+    DirectoryIterator* newDirectoryIterator (const std::wstring path) const;
 };
-
 
 
 };  // namespace FileSystemProxy
 
 
-#endif   // ifndef _fileSystemProxy_h
+#endif   // _fileSystemProxyWindows_h
