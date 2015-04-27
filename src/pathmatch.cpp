@@ -28,7 +28,7 @@ using namespace FileSystemProxy;
 
     // Usage Information
 
-static const wchar_t usage[] =
+static const wchar_t usage[] {
     L"\n"
     L"pathmatch v005 / 2007-12-03 / Steve Hollasch <steve@hollasch.net>\n"
     L"pathmatch: Report files and directories matching the specified pattern\n"
@@ -53,7 +53,8 @@ static const wchar_t usage[] =
     L"\n"
     L"    -f         Report files only (no directories). To report directories\n"
     L"               only, append a slash to the pattern.\n"
-    L"\n";
+    L"\n"
+};
 
 
 MatchTreeCallback mtCallback;    // Matching Entry Callback Routine
@@ -95,13 +96,14 @@ int wmain (int argc, wchar_t *argv[])
     //==========================================================================
 
     FileSysProxyWindows fsProxy;    // File System Proxy Object
-    PathMatcher  matcher(fsProxy);  // PathMatcher Object
-    ReportOpts   reportOpts;        // Options for callback routine
+    PathMatcher matcher {fsProxy};  // PathMatcher Object
 
-    reportOpts.slashChar     = L'\\'; // Default slashes are backward.
-    reportOpts.fullPath      = false; // Default to relative paths.
-    reportOpts.filesOnly     = false; // Default to report files and directories
-    reportOpts.maxPathLength = fsProxy.maxPathLength();
+    ReportOpts reportOpts {      // Options for callback routine
+        L'\\',                   // slashChar:     Default slashes are backward.
+        false,                   // fullPath:      Default to relative paths.
+        false,                   // filesOnly:     Default to report files and directories
+        fsProxy.maxPathLength()  // maxPathLength: Use file system proxy value.
+    };
 
     if (argc <= 1)
     {   wcout << usage;
@@ -112,7 +114,7 @@ int wmain (int argc, wchar_t *argv[])
 
     for (int argi=1;  argi < argc;  ++argi)
     {
-        wchar_t *arg = argv[argi];
+        auto arg = argv[argi];
 
         // The argument "/?" is a special case. While it's technically a valid file system pattern,
         // we treat it as a request for tool information by convention (if it's the first argument).
@@ -192,10 +194,10 @@ bool mtCallback (
 
     // Get the properly typed report options structure from the callback data.
 
-    const ReportOpts *reportOpts = static_cast<const ReportOpts*>(cbdata);
+    auto reportOpts = static_cast<const ReportOpts*>(cbdata);
 
     auto fullPath = new wchar_t [reportOpts->maxPathLength + 1];  // Optional Full Path
-    const wchar_t* item = entry;       // Pointer to Matching Entry
+    auto item = entry;       // Pointer to Matching Entry
 
     // If we are to report only files and this entry is a directory, then return without reporting.
 

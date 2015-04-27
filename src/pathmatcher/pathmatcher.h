@@ -76,19 +76,17 @@ class PathMatcher
 
   private:   // Private Member Variables
 
-    FileSysProxy&      m_fsProxy;      // File System Proxy
-    MatchTreeCallback* m_callback;     // Match Callback Function
-    void*              m_callbackData; // Callback Function Data
+    FileSysProxy&      m_fsProxy;                  // File System Proxy
+    MatchTreeCallback* m_callback { nullptr };     // Match Callback Function
+    void*              m_callbackData { nullptr }; // Callback Function Data
 
-    wchar_t* m_path;                   // Current path
+    wchar_t* m_path;                               // Current path
+    wchar_t* m_pattern { nullptr };                // Wildcarded portion of the given pattern
+    size_t   m_patternBufferSize { 0 };            // Size of the pattern buffer.
+    bool     m_dirsOnly { false };                 // If true, report directories only
 
-    wchar_t *m_pattern;                // Wildcarded portion of the given pattern
-    size_t   m_patternBufferSize;      // Size of the pattern buffer.
-
-    bool     m_dirsOnly;               // If true, report directories only
-
-    const wchar_t *m_ellipsisPattern;  // Ellipsis Pattern
-    wchar_t       *m_ellipsisPath;     // Path part to match against ellipsis pattern
+    const wchar_t* m_ellipsisPattern { nullptr };  // Ellipsis Pattern
+    wchar_t*       m_ellipsisPath { nullptr };     // Path part to match against ellipsis pattern
 
 
   private:   // Private Methods
