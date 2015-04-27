@@ -31,18 +31,19 @@ namespace FileSystemProxy {
 
 
 class DirectoryIteratorWindows : public DirectoryIterator {
+
   public:
     DirectoryIteratorWindows (const std::wstring path);
     ~DirectoryIteratorWindows();
 
     // Advance to first/next entry.
-    virtual bool next();
+    bool next() override;
 
     // True => current entry is a directory.
-    virtual bool isDirectory() const;
+    bool isDirectory() const override;
 
     // Return name of the current entry.
-    virtual const wchar_t* name() const;
+    const wchar_t* name() const override;
 
   private:
     bool            m_started;      // True => directory iteration started
@@ -57,7 +58,7 @@ class FileSysProxyWindows : public FileSysProxy {
   public:
     virtual ~FileSysProxyWindows() {}
 
-    virtual size_t maxPathLength() const { return _MAX_PATH; }
+    size_t maxPathLength() const override { return _MAX_PATH; }
 
     // Return a directory iterator object.
     // NOTE: User must delete this object!
