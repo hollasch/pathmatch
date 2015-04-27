@@ -32,6 +32,9 @@ namespace FileSystemProxy {
 
 class DirectoryIteratorWindows : public DirectoryIterator {
 
+    // This class provides a way to iterate through file & directory entries in a Windows
+    // file system.
+
   public:
     DirectoryIteratorWindows (const std::wstring path);
     ~DirectoryIteratorWindows();
@@ -54,6 +57,8 @@ class DirectoryIteratorWindows : public DirectoryIterator {
 
 
 class FileSysProxyWindows : public FileSysProxy {
+
+    // This class provides a general file system interface for Windows.
 
   public:
     virtual ~FileSysProxyWindows() {}

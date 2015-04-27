@@ -32,6 +32,9 @@ namespace FileSystemProxy {
 
 
 class DirectoryIterator {
+    
+    // This abstract base class provides a way to iterate through file & directory entries in a
+    // directory.
 
   public:
     DirectoryIterator() {}
@@ -51,13 +54,16 @@ class DirectoryIterator {
 
 class FileSysProxy {
 
+    // This abstract base class provides a general file system interface across different file
+    // systems, including test harnesses.
+
   public:
     virtual ~FileSysProxy() {}
 
     virtual size_t maxPathLength() const = 0;
 
-    // Return a directory iterator object.
-    // NOTE: User must delete this object!
+    // Return a directory iterator object. NOTE: User must delete this object! It is recommended
+    // that you hold the return value in a unique_ptr<>.
     virtual DirectoryIterator* newDirectoryIterator (const std::wstring path) const = 0;
 };
 
