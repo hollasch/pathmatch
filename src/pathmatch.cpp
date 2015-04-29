@@ -23,8 +23,8 @@
 #include <iostream>
 
 using namespace std;
-using namespace PathMatch;
-using namespace FileSystemProxy;
+using namespace PMatcher;
+using namespace FSProxy;
 
     // Usage Information
 

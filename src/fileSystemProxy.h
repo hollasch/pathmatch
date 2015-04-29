@@ -27,7 +27,7 @@
 #include <string>
 
 
-namespace FileSystemProxy {
+namespace FSProxy {
 
 
 

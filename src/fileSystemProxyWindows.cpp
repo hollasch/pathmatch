@@ -23,7 +23,7 @@
 #include <string>
 
 using namespace std;
-using namespace FileSystemProxy;
+using namespace FSProxy;
 
 
 

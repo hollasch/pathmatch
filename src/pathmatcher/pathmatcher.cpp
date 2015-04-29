@@ -33,7 +33,7 @@
 // PathMatch Namespace
 // =================================================================================================
 
-namespace PathMatch {
+namespace PMatcher {
 
 
 

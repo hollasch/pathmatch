@@ -29,11 +29,11 @@
 #include <FileSystemProxy.h>
 
 using namespace std;
-using FileSystemProxy::DirectoryIterator;
-using FileSystemProxy::FileSysProxy;
+using FSProxy::DirectoryIterator;
+using FSProxy::FileSysProxy;
 
 
-namespace PathMatch {
+namespace PMatcher {
 
 
     // Standalone Function Declarations
