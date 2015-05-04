@@ -57,6 +57,7 @@ class FileSysProxyMock : public FileSysProxy {
     // This class provides an mock file system to test out the generic FileSysProxy class.
 
   public:
+    FileSysProxyMock (const std::wstring mockDirFileName);
     virtual ~FileSysProxyMock() {}
 
     size_t maxPathLength() const override { return c_MaxPath; }
@@ -66,6 +67,7 @@ class FileSysProxyMock : public FileSysProxy {
     DirectoryIterator* newDirectoryIterator (const std::wstring path) const;
 
   private: 
+    FILE* m_mockDirFile;     // Mock Directory Source File
 };
 
 

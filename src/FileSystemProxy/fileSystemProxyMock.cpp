@@ -56,6 +56,16 @@ const wchar_t* DirectoryIteratorMock::name() const
 
 
 
+FileSysProxyMock::FileSysProxyMock (const wstring mockDirFileName)
+{
+    if (S_OK == _wfopen_s(&m_mockDirFile, mockDirFileName.c_str(), L"r, ccs=UNICODE"))
+    {
+        // Do nothing with the file for now.
+        fclose (m_mockDirFile);
+    }
+}
+
+
 DirectoryIterator* FileSysProxyMock::newDirectoryIterator (const std::wstring path) const
 {
     // Not yet implemented.
