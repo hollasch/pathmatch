@@ -549,6 +549,9 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
         }
         else if (isSlash(*src))
         {
+            while (isSlash(src[1]))   // Scan to the last slash in a series of slashes.
+                ++src;
+
             if (src[1] == 0)          // If the pattern ends in a slash, then
             {                         // record that the pattern is specifying
                 m_dirsOnly = true;    // directories only.
