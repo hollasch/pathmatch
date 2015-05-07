@@ -30,7 +30,7 @@ using namespace FSProxy;
 
 static const wchar_t usage[] {
     L"\n"
-    L"pathmatch v005 / 2007-12-03 / Steve Hollasch <steve@hollasch.net>\n"
+    L"pathmatch v0.9.0.1 / 2015-05-07 / Steve Hollasch <steve@hollasch.net>\n"
     L"pathmatch: Report files and directories matching the specified pattern\n"
     L"Usage    : pathmatch [-s<slash>] [-f] <pattern> ... <pattern>\n"
     L"\n"
