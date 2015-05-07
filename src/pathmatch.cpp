@@ -33,10 +33,10 @@ static const wstring version {
 };
 
 static const wstring usage {
+//    ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
     L"pathmatch: Report files and directories matching the specified pattern\n"
     L"Usage    : pathmatch [-s<slash>] [-f] [-v] <pattern> ... <pattern>\n"
     L"\n"
-//    1---+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
     L"    pathmatch finds and reports all files and directories matching wildcard\n"
     L"    patterns. These patterns may contain the special characters '?', '*', and\n"
     L"    '...'. The '?' pattern matches any single character, '*' matches multiple\n"
