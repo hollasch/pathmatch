@@ -28,19 +28,22 @@ using namespace FSProxy;
 
     // Usage Information
 
-static const wchar_t usage[] {
-    L"\n"
-    L"pathmatch v0.9.0.1 / 2015-05-07 / Steve Hollasch <steve@hollasch.net>\n"
+static const wstring version {
+    L"pathmatch v0.9.0.2 / 2015-05-07 / Steve Hollasch <steve@hollasch.net>"
+};
+
+static const wstring usage {
     L"pathmatch: Report files and directories matching the specified pattern\n"
-    L"Usage    : pathmatch [-s<slash>] [-f] <pattern> ... <pattern>\n"
+    L"Usage    : pathmatch [-s<slash>] [-f] [-v] <pattern> ... <pattern>\n"
     L"\n"
+//    1---+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
     L"    pathmatch finds and reports all files and directories matching wildcard\n"
-    L"    patterns. These patterns may contain the special characters '?', '*',\n"
-    L"    and '...'. The '?' pattern matches any single character, '*' matches\n"
-    L"    multiple characters except slashes, and '...' matches multiple\n"
-    L"    characters including slashes. For example, the following patterns all\n"
-    L"    match the file \"abc\\def\\ghi\\jkl\": \"abc\\d?f\\??i\\jkl\", \"abc\\*\\*\\jkl\",\n"
-    L"    and \"abc\\...\\jkl\".\n"
+    L"    patterns. These patterns may contain the special characters '?', '*', and\n"
+    L"    '...'. The '?' pattern matches any single character, '*' matches multiple\n"
+    L"    characters except slashes, and '...' matches multiple characters including\n"
+    L"    slashes. For example, the following patterns all match the file\n"
+    L"    \"abc\\def\\ghi\\jkl\": \"abc\\d?f\\??i\\jkl\", \"abc\\*\\*\\jkl\", \"abc\\...\\jkl\", and\n"
+    L"    \"ab...kl\".\n"
     L"\n"
     L"    The following command options are supported:\n"
     L"\n"
@@ -53,6 +56,8 @@ static const wchar_t usage[] {
     L"\n"
     L"    -f         Report files only (no directories). To report directories\n"
     L"               only, append a slash to the pattern.\n"
+    L"\n"
+    L"    -v         Print version information.\n"
     L"\n"
 };
 
@@ -72,23 +77,6 @@ struct ReportOpts
 
 
 
-inline wchar_t OptionChar (const wchar_t *arg)
-{
-    //==========================================================================
-    // OptionChar
-    //     Returns the option character for a command-line argument. This is the
-    //     letter following a dash character. If the first character is not a
-    //     dash, this function will return 0.
-    //==========================================================================
-
-    if (arg[0] != L'-')
-        return 0;
-    else
-        return arg[1];
-}
-
-
-
 int wmain (int argc, wchar_t *argv[])
 {
     //==========================================================================
@@ -105,10 +93,20 @@ int wmain (int argc, wchar_t *argv[])
         fsProxy.maxPathLength()  // maxPathLength: Use file system proxy value.
     };
 
+    // Usage-printing helper function.
+    auto exitWithUsage = [] () {
+        wcout << version << endl << usage;
+        exit(0);
+    };
+
+    // Option character helper function. If the string is a command-line option, then it returns
+    // the option character, else 0.
+    auto optionChar = [] (const wchar_t* arg) {
+        return (arg[0] == L'-') ? arg[1] : 0;
+    };
+
     if (argc <= 1)
-    {   wcout << usage;
-        return 0;
-    }
+        exitWithUsage();
 
     // Cycle through all command-line arguments.
 
@@ -120,16 +118,12 @@ int wmain (int argc, wchar_t *argv[])
         // we treat it as a request for tool information by convention (if it's the first argument).
 
         if (0 == (wcscmp(arg, L"/?")))
-        {   wcout << usage;
-            return 0;
-        }
+            exitWithUsage();
 
-        switch (OptionChar(arg))
+        switch (optionChar(arg))
         {
             case L'h': case L'H': case L'?':     // Help Info
-            {   wcout << usage;
-                break;
-            }
+                exitWithUsage();
 
             case L'a': case L'A':                // Absolute Path Option
             {   reportOpts.fullPath = true;
@@ -150,6 +144,11 @@ int wmain (int argc, wchar_t *argv[])
                     exit (1);
                 }
                 break;
+            }
+
+            case L'v': case L'V':                // Version Query
+            {   wcout << version << endl;
+                exit(0);
             }
 
             default:
