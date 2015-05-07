@@ -68,6 +68,12 @@ class FileSysProxyWindows : public FileSysProxy {
     // Return a directory iterator object.
     // NOTE: User must delete this object!
     DirectoryIterator* newDirectoryIterator (const std::wstring path) const;
+
+    // Set the current working directory. Returns true if the directory does not exist.
+    virtual bool setCurrentDirectory (const std::wstring path);
+
+  private:
+    std::wstring m_currentDir;     // Current working directory
 };
 
 

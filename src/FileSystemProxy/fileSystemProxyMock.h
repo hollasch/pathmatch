@@ -66,8 +66,12 @@ class FileSysProxyMock : public FileSysProxy {
     // NOTE: User must delete this object!
     DirectoryIterator* newDirectoryIterator (const std::wstring path) const;
 
+    // Set the current working directory. Returns true if the directory does not exist.
+    virtual bool setCurrentDirectory (const std::wstring path);
+
   private: 
-    FILE* m_mockDirFile;     // Mock Directory Source File
+    FILE*        m_mockDirFile;     // Mock Directory Source File
+    std::wstring m_currentDir;      // Current working directory
 };
 
 

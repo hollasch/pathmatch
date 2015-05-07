@@ -65,6 +65,9 @@ class FileSysProxy {
     // Return a directory iterator object. NOTE: User must delete this object! It is recommended
     // that you hold the return value in a unique_ptr<>.
     virtual DirectoryIterator* newDirectoryIterator (const std::wstring path) const = 0;
+
+    // Set the current working directory. Returns false if the directory does not exist.
+    virtual bool setCurrentDirectory (const std::wstring path) = 0;
 };
 
 

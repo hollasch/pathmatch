@@ -71,3 +71,13 @@ DirectoryIterator* FileSysProxyMock::newDirectoryIterator (const std::wstring pa
     // Not yet implemented.
     return new DirectoryIteratorMock(path);
 }
+
+
+bool FileSysProxyMock::setCurrentDirectory (const std::wstring path)
+{
+    // Sets the current working directory. Returns true if the directory is valid.
+    m_currentDir = path;
+
+    // NOT YET IMPLEMENTED: For now, just always accept the directory.
+    return true;
+}

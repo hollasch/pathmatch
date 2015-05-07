@@ -75,3 +75,13 @@ DirectoryIterator* FileSysProxyWindows::newDirectoryIterator (const wstring path
 {
     return new DirectoryIteratorWindows(path);
 }
+
+
+bool FileSysProxyWindows::setCurrentDirectory (const wstring path)
+{
+    // Sets the current working directory. Returns true if the directory is valid.
+    m_currentDir = path;
+
+    // NOT YET IMPLEMENTED: For now, just always accept the directory.
+    return true;
+}
