@@ -21,12 +21,21 @@ patterns:
 Examples
 -----------
 
-|  Sequence   | Result
-|:------------|:------------------------------------------------------------
-| `a?c`       | Matches `abc`, `axc`, and `aac`. Does not match `ac`, `abbc`, or `a/c`.
-| `a*c`       | Matches "ac", "abc" and "azzzzzzzc". Does not match "a/c".
-| `foo...bar` | Matches "foobar", "fooxbar", and "fooz/blaz/rebar". Does not match "fo/obar", "fobar" or "food/bark".
-| `....obj`   | Matches all files anywhere in the current hierarchy that end in ".obj". Note that the first three periods are interpreted as "...", and the fourth one is interpreted as a literal "." character.
+    |  Sequence   | Result                                                        |
+    |-------------|---------------------------------------------------------------|
+    | `a?c`       | Matches `abc`, `axc`, and `aac`. Does not match `ac`, `abbc`, | 
+    |             | or `a/c`.                                                     |
+    |-------------|---------------------------------------------------------------|
+    | `a*c`       | Matches "ac", "abc" and "azzzzzzzc". Does not match "a/c".    |
+    |-------------|---------------------------------------------------------------|
+    | `foo...bar` | Matches "foobar", "fooxbar", and "fooz/blaz/rebar". Does not  |
+    |             | match "fo/obar", "fobar" or "food/bark".                      |
+    |-------------|---------------------------------------------------------------|
+    | `....obj`   | Matches all files anywhere in the current hierarchy that end  |
+    |             | in ".obj". Note that the first three periods are interpreted  |
+    |             | as "...", and the fourth one is interpreted as a literal "."  |
+    |             | character.                                                    |
+    |-------------|---------------------------------------------------------------|
 
 
 `pathmatcher.lib`
@@ -46,4 +55,4 @@ application and 64-bit static library.
 
 
 ----
-Steve Hollasch <steve@hollasch.net>  /  2013 August 18
+Steve Hollasch <steve@hollasch.net>  /  2016 Oct 18
