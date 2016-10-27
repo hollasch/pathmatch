@@ -136,13 +136,24 @@ int wmain (int argc, wchar_t *argv[])
             }
 
             case L's': case L'S':                // Slash Direction Option
-            {   if ((arg[2] == L'/') || (arg[2] == L'\\'))
-                    reportOpts.slashChar = arg[2];
-                else
-                {   wcerr << L"pathmatch: Unexpected -s option (\""
-                          << arg+2 << L"\").\n";
+            {
+                auto slashChar = arg[2];
+
+                if (slashChar == 0) {
+                    ++argi;
+                    if (argi >= argc)
+                    {   wcerr << L"pathmatch: Expected slash type after '-s' option.\n";
+                        exit (1);
+                    }
+                    slashChar = *argv[argi];
+                }
+
+                if ((slashChar != L'/') && (slashChar != L'\\'))
+                {   wcerr << L"pathmatch: Invalid '-s' option (\"" << slashChar << L"\").\n";
                     exit (1);
                 }
+
+                reportOpts.slashChar = slashChar;
                 break;
             }
 
