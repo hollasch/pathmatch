@@ -26,10 +26,12 @@ using namespace std;
 using namespace PMatcher;
 using namespace FSProxy;
 
+static const wstring version = L"9.1.0";
+
     // Usage Information
 
-static const wstring version {
-    L"pathmatch v0.9.0.2 / 2015-05-07 / Steve Hollasch <steve@hollasch.net>"
+static const wstring usage_header {
+    L"pathmatch  v" + version + L"  https://github.com/hollasch/pathmatch/"
 };
 
 static const wstring usage {
@@ -95,7 +97,7 @@ int wmain (int argc, wchar_t *argv[])
 
     // Usage-printing helper function.
     auto exitWithUsage = [] () {
-        wcout << version << endl << usage;
+        wcout << usage_header << endl << usage;
         exit(0);
     };
 
