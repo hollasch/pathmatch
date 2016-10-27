@@ -53,9 +53,15 @@ static bool isSlash (const wchar_t c)
 }
 
 
+static bool isDoubleAsterisk (const wchar_t *str)
+{
+    return ((str[0] == L'*') && (str[1] == L'*'));
+}
+
+
 static bool isEllipsis (const wchar_t *str)
 {
-    // Return true if and only if the string begins with "...".
+    // Return true iff string begins with "...".
     return (str[0] == L'.') && (str[1] == L'.') && (str[2] == L'.');
 }
 
@@ -63,7 +69,7 @@ static bool isEllipsis (const wchar_t *str)
 static bool isMultiWildStr (const wchar_t* str)
 {
     // Return true if and only if the string begins with a wildcard that matches
-    // multiple characters ("*" or "...").
+    // multiple characters ("*" or "..." or "**").
     return (*str == L'*') || isEllipsis(str);
 }
 
@@ -214,9 +220,9 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
     // pathmatch
     //     Compares a single path against a VMS-style wildcard specification. In the pattern string,
     //     the character '?' denotes any single character except '/', the character '*' denotes any
-    //     number of characters except '/', and the sequence '...' denotes any number of characters
-    //     including '/'. All other characters in the pattern are interpreted literally, though
-    //     without regard to case. For example, 'a' matches 'A'.
+    //     number of characters except '/', and the sequence '...' or '**' denotes any number of
+    //     characters including '/'. All other characters in the pattern are interpreted literally,
+    //     though without regard to case. For example, 'a' matches 'A'.
     //
     //     Note that this routine also interprets a backslash ('\') as a euphemism for a forward
     //     slash.
@@ -295,11 +301,16 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
 
     while (isMultiWildStr (pattern))
     {
-        if (pattern[0] == L'*')
-            pattern += 1;
-        else
+        if (isEllipsis(pattern))
         {   pattern += 3;
             fEllipsis = true;
+        }
+        else if (isDoubleAsterisk(pattern))
+        {   pattern += 2;
+            fEllipsis = true;
+        }
+        else
+        {   pattern += 1;
         }
     }
 
@@ -723,12 +734,13 @@ void PathMatcher::MatchDir (
     if (!pattern || !*pattern) return;
 
     // Characterize the type of pattern matching we'll be doing in the current directory. Scan
-    // forward to find the first of the end of the pattern, a slash, or an ellipsis.
+    // forward to find the first of the end of the pattern, a slash, an ellipsis, or a double asterisk.
 
     int  ipatt { 0 };
     auto fliteral = true;
 
-    while (pattern[ipatt] && !isSlash(pattern[ipatt]) && !isEllipsis(pattern + ipatt))
+    while (pattern[ipatt] && !isSlash(pattern[ipatt])
+       && !(isEllipsis(pattern + ipatt) || isDoubleAsterisk(pattern + ipatt)))
     {
         if ((pattern[ipatt] == L'?') || (pattern[ipatt] == L'*'))
             fliteral = false;
@@ -739,7 +751,7 @@ void PathMatcher::MatchDir (
     // If the current pattern subdirectory contains an ellipsis, then handle the remainder of the
     // pattern and return.
 
-    if (isEllipsis(pattern + ipatt))
+    if (isEllipsis(pattern + ipatt) || isDoubleAsterisk(pattern + ipatt))
     {
         HandleEllipsisSubpath (pathend, pattern, ipatt);
         return;
@@ -827,21 +839,17 @@ void PathMatcher::MatchDir (
 
 
 void PathMatcher::HandleEllipsisSubpath (
-    wchar_t       *pathend,
-    const wchar_t *pattern,
-    int            ipatt)
+    wchar_t       *pathend,    // One past the last character
+    const wchar_t *pattern,    // Pointer to the beginning of the current subdir of the full pattern
+    int            ipatt)      // Offset from the pattern to the beginning of the ellipsis
 {
-    //----------------------------------------------------------------------------------------------
-    // This function handles subdirectories that contain ellipses.
-    //
-    // The parameter 'pathend' points to one past the last character. The 'pattern' parameter is a
-    // pointer to the beginning of the current subdirectory of the full pattern. Finally, 'ipatt' is
-    // an integer offset from pattern to beginning of the ellipsis.
-    //----------------------------------------------------------------------------------------------
+    // This function handles subdirectories that contain ellipses (or double asterisks).
 
     wchar_t* ellipsis_prefix { nullptr };    // Pattern Filter for Prefixed Ellipses
 
-    if ((ipatt == 0) && !pattern[ipatt+3])
+    auto ellipsisEnd = isEllipsis(pattern + ipatt) ? (ipatt + 3) : (ipatt + 2);
+
+    if ((ipatt == 0) && !pattern[ellipsisEnd])
     {
         // ...<end> - Just do a simple recursive fetch of the tree.
 
