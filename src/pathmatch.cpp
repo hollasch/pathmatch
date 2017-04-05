@@ -4,7 +4,7 @@
 //     This program returns all files and directories matching the specified pattern.
 //
 // _________________________________________________________________________________________________
-// Copyright 2015 Steve Hollasch
+// Copyright 2017 Steve Hollasch
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License. You may obtain a copy of the License at
@@ -26,7 +26,7 @@ using namespace std;
 using namespace PMatcher;
 using namespace FSProxy;
 
-static const wstring version = L"9.1.0";
+static const wstring version = L"0.1.1";
 
     // Usage Information
 
