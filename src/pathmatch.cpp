@@ -3,18 +3,6 @@
 //
 //     This program returns all files and directories matching the specified pattern.
 //
-// _________________________________________________________________________________________________
-// Copyright 2017 Steve Hollasch
-//
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-// in compliance with the License. You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software distributed under the License
-// is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-// or implied. See the License for the specific language governing permissions and limitations under
-// the License.
 //==================================================================================================
 
 #include "pathmatcher.h"
@@ -193,12 +181,12 @@ bool mtCallback (
     //==========================================================================
     // mtcallback
     //     This is the callback function for the PathMatcher object.
-    // 
+    //
     // Parameters
     //     entry ....... The relative matching file or directory
     //     attribs ..... The file or directory's attributes
     //     cbdata ...... Pointer to the report options
-    // 
+    //
     // Returns
     //     True to continue fetching matching entries, unless the routine
     //     encountered and error attempting to convert a path to a full path.
