@@ -1,4 +1,4 @@
-`pathmatch`
+pathmatch
 ================================================================================
 
 A directory/filename pattern match utility for the Windows command line.
@@ -38,7 +38,7 @@ Examples
     |-------------|---------------------------------------------------------------|
 
 
-`pathmatcher.lib`
+pathmatcher.lib
 -------------------
 
 In addition to the `pathmatch.exe` tool, this project creates the
