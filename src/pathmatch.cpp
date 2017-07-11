@@ -23,7 +23,7 @@ static const wstring usage_header {
 };
 
 static const wstring usage {
-//    ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
+    //----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
     L"pathmatch: Report files and directories matching the specified pattern\n"
     L"Usage    : pathmatch [-s<slash>] [-f] [-v] <pattern> ... <pattern>\n"
     L"\n"
