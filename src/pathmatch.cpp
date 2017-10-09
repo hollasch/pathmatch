@@ -14,7 +14,7 @@ using namespace std;
 using namespace PMatcher;
 using namespace FSProxy;
 
-static const wstring version = L"0.1.2-beta";
+static const wstring version = L"0.1.1";
 
     // Usage Information
 
