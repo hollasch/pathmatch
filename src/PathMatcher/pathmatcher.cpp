@@ -512,6 +512,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
     auto src  = pattern;
     auto dest = m_pattern;
+    auto pastAnyLeadingSlashes = false;
 
     // Preserve leading multiple slashes at the beginning of the pattern.
 
@@ -523,6 +524,8 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
     while (*src)
     {
+        pastAnyLeadingSlashes = true;
+
         if ((src[0] == L'.') && ((src[1] == 0) || isSlash(src[1])))
         {
             // The current subpath is a '.' directory.
@@ -626,7 +629,8 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
         }
     }
 
-    assert (!isSlash(dest[-1]));
+    if (pastAnyLeadingSlashes)
+        assert (!isSlash(dest[-1]));
 
     *dest = 0;
 
