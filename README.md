@@ -53,6 +53,13 @@ Building
 This project requires Visual Studio to build, and generates the 64-bit console
 application and 64-bit static library.
 
+For the time being, this project includes a clone of the FileSystemProxy project
+as a sub-directory. To set this up before building, run the following command:
+
+```
+git clone https://github.com/hollasch/FileSystemProxy.git ext/FileSystemProxy
+```
+
 
 ----
-Steve Hollasch <steve@hollasch.net>  /  2016 Oct 18
+Steve Hollasch <steve@hollasch.net>
