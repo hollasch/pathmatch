@@ -21,6 +21,9 @@
     <ClCompile Include="..\..\src\pathmatcher\pathmatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ext\FileSystemProxy\fileSystemProxyWindows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\pathmatcher\pathmatcher.h">
