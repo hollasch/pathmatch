@@ -38,9 +38,6 @@
 #include <string>
 #include <FileSystemProxy.h>
 
-using namespace std;
-using FSProxy::DirectoryIterator;
-using FSProxy::FileSysProxy;
 
 
 namespace PMatcher {
@@ -49,7 +46,10 @@ namespace PMatcher {
     // Standalone Function Declarations
 
 // Wildcard comparison test. Case insensitive.
-bool wildComp (const wchar_t *pattern, const wchar_t *string);
+bool wildComp (const std::string pattern, const std::string str);
+bool wildComp (std::string::const_iterator patternIt, std::string::const_iterator patternEnd,
+               std::string::const_iterator strIt,     std::string::const_iterator strEnd);
+             
 
 // Wildcard comparison test. Case sensitive.
 bool wildCompCaseSensitive (const wchar_t *pattern, const wchar_t *string);
@@ -63,7 +63,7 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 // The callback function signature that PathMatcher uses to report back all matching entries.
 typedef bool (MatchTreeCallback) (
     const wchar_t* entry,
-    const DirectoryIterator& fileData,
+    const FileSystemProxy::DirectoryIterator& fileData,
     void* userData);
 
 class PathMatcher
@@ -76,7 +76,7 @@ class PathMatcher
 
   public:
 
-    PathMatcher (FileSysProxy &fsProxy);
+    PathMatcher (FileSystemProxy::FSProxy &fsProxy);
     ~PathMatcher();
 
     // The main match procedure.
@@ -86,9 +86,9 @@ class PathMatcher
 
   private:   // Private Member Variables
 
-    FileSysProxy&      m_fsProxy;                  // File System Proxy
-    MatchTreeCallback* m_callback { nullptr };     // Match Callback Function
-    void*              m_callbackData { nullptr }; // Callback Function Data
+    FileSystemProxy::FSProxy& m_fsProxy;                  // File System Proxy
+    MatchTreeCallback*        m_callback { nullptr };     // Match Callback Function
+    void*                     m_callbackData { nullptr }; // Callback Function Data
 
     wchar_t* m_path;                               // Current path
     wchar_t* m_pattern { nullptr };                // Wildcarded portion of the given pattern

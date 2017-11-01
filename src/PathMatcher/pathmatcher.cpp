@@ -38,6 +38,9 @@
 #include <assert.h>
 
 
+using namespace FileSystemProxy;
+using std::string;
+
 
 // =================================================================================================
 // PathMatch Namespace
@@ -84,9 +87,13 @@ static bool isMultiWildStr (const wchar_t* str)
 }
 
 
+bool wildComp (const string pattern, const string str) {
+    return wildComp (pattern.begin(), pattern.end(), str.begin(), str.end());
+}
 
-bool wildComp (const wchar_t *pattern, const wchar_t *string)
-{
+
+bool wildComp (std::string::const_iterator patternIt, std::string::const_iterator patternEnd,
+               std::string::const_iterator strIt,     std::string::const_iterator strEnd) {
     //==============================================================================================
     // wildComp
     //     Compares a pattern against a string to determine if the two match. In the pattern string,
@@ -96,48 +103,48 @@ bool wildComp (const wchar_t *pattern, const wchar_t *string)
     //     wildcompc().
     //
     // Parameters
-    //     pattern - The pattern to compare with the string
-    //     string  - The string to test for matching
+    //     patternIt  - Iterator over the const pattern to compare with the string
+    //     patternEnd - The end of the const pattern string
+    //     strIt      - Iterator over the const string to test for matching
+    //     strIt      - The end of the const string to test for matching
     //
     // Returns
     //     True if and only if the pattern matches the string. This function returns false if either
     //     the pattern or the string are null pointers.
     //==============================================================================================
 
-    if (!pattern || !string) return false;
-
     // Scan through the single character matches.
 
-    while (*pattern && *string)
+    while ((patternIt != patternEnd) && (strIt != strEnd))
     {
-        if (*pattern == L'*')  // If we've hit an asterisk, then drop down to the section below.
+        if (*patternIt == '*')  // If we've hit an asterisk, then drop down to the section below.
             break;
 
         // Stop testing on mismatch.
 
-        if ((*pattern != L'?') && (tolower(*pattern) != tolower(*string)))
+        if ((*patternIt != '?') && (tolower(*patternIt) != tolower(*strIt)))
             break;
 
-        ++ pattern;    // On a successful match, increment the pattern and the string and continue.
-        ++ string;
+        ++ patternIt;   // On a successful match, increment the pattern and the string and continue.
+        ++ strIt;
     }
 
     // Unless we stopped on an asterisk, we're done matching. The only valid way to match at this
     // point is if both the pattern and the string are exhausted.
 
-    if (*pattern != L'*')
-        return (*pattern == 0) && (*string == 0);
+    if (*patternIt != '*')
+        return (patternIt == patternEnd) && (strIt == strEnd);
 
     // Advance past the asterisk. Handle pathological cases where there is more than one asterisk
     // in a row.
 
-    while (*pattern == L'*')
-        ++pattern;
+    while (*patternIt == '*')
+        ++patternIt;
 
     // If the asterisk is the last character of the pattern, then we match any remainder,
     // so return true.
 
-    if (*pattern == 0)
+    if (patternIt == patternEnd)
         return true;
 
     // We're at an asterisk with other patterns following, so recursively eat away at the string
@@ -145,11 +152,13 @@ bool wildComp (const wchar_t *pattern, const wchar_t *string)
 
     while (true)
     {
-        if (wildComp (pattern, string))
+        if (wildComp (patternIt, patternEnd, strIt, strEnd))
             return true;
 
-        if (!*string++)
+        if (strIt == strEnd)
             return false;
+
+        ++ strIt;
     }
 }
 
@@ -411,7 +420,7 @@ static bool isUpDir (const wchar_t *str)
     // PathMatcher Implementation
     // ============================
 
-PathMatcher::PathMatcher (FileSysProxy &fsProxy)
+PathMatcher::PathMatcher (FSProxy &fsProxy)
   : m_fsProxy(fsProxy)
 {
     // PathMatcher Default Constructor
@@ -803,7 +812,7 @@ void PathMatcher::MatchDir (
         pathend[1] = 0;
     }
 
-    std::unique_ptr<DirectoryIterator> dirEntry { m_fsProxy.newDirectoryIterator(m_path) };
+    unique_ptr<DirectoryIterator> dirEntry { m_fsProxy.newDirectoryIterator(m_path) };
 
     while (dirEntry->next())
     {
@@ -932,7 +941,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
     pathend[0] = L'*';
     pathend[1] = 0;
 
-    std::unique_ptr<DirectoryIterator> dirEntry (m_fsProxy.newDirectoryIterator(m_path));
+    unique_ptr<DirectoryIterator> dirEntry (m_fsProxy.newDirectoryIterator(m_path));
 
     while (dirEntry->next())
     {
