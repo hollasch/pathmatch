@@ -29,5 +29,8 @@
     <ClInclude Include="..\..\src\pathmatcher\pathmatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ext\FileSystemProxy\FileSystemProxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
