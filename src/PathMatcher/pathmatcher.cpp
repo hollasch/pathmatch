@@ -29,24 +29,27 @@
 
 #include "pathmatcher.h"
 
-#include <io.h>
-#include <string.h>
-#include <windows.h>
+#include <locale>
+#include <string>
 #include <memory>
 
+#include <io.h>
 #include <stdio.h>
 #include <assert.h>
+
+#include <windows.h>
 
 
 using namespace FileSystemProxy;
 using std::string;
+using std::unique_ptr;
 
 
 // =================================================================================================
 // PathMatch Namespace
 // =================================================================================================
 
-namespace PMatcher {
+namespace PathMatcher {
 
 
 
@@ -59,35 +62,49 @@ namespace PMatcher {
     // Helper Functions
     // ==================
 
-static bool isSlash (const wchar_t c)
-{
+static bool isSlash (const char c) {
     // Return true if and only if the character is a forward or backward slash.
-    return ((c == L'/') || (c == L'\\'));
+    return ((c == '/') || (c == '\\'));
 }
 
 
-static bool isDoubleAsterisk (const wchar_t *str)
-{
-    return ((str[0] == L'*') && (str[1] == L'*'));
+static bool isDoubleAsterisk (const string str, string::const_iterator strIt) {
+    // Return true if the string iterator points to a sequence of two asterisk characters.
+    return ((strIt[0] == '*') && ((strIt+1) != str.end()) && (strIt[1] == '*'));
 }
 
 
-static bool isEllipsis (const wchar_t *str)
-{
-    // Return true iff string begins with "...".
-    return (str[0] == L'.') && (str[1] == L'.') && (str[2] == L'.');
+static bool isEllipsis (const string str, string::const_iterator strIt) {
+    // Return true iff string iterator begins with "...".
+    auto strEnd = str.end();
+    return (
+        ((strIt+0) != strEnd) && (strIt[0] == '.') && 
+        ((strIt+1) != strEnd) && (strIt[1] == '.') && 
+        ((strIt+2) != strEnd) && (strIt[2] == '.')
+    );
 }
 
 
-static bool isMultiWildStr (const wchar_t* str)
-{
+static bool isMultiWildStr (const string str, string::const_iterator strIt) {
     // Return true if and only if the string begins with a wildcard that matches
     // multiple characters ("*" or "..." or "**").
-    return (*str == L'*') || isEllipsis(str);
+    auto strEnd = str.end();
+    return (strIt != strEnd) && ((*strIt == '*') || isEllipsis(str, strIt));
+}
+
+
+static bool isEqualCaseSensitive (char a, char b) {
+    return a == b;
+}
+
+static bool isEqualCaseInsensitive (char a, char b) {
 }
 
 
 bool wildComp (const string pattern, const string str) {
+    // Performs a case-sensitive comparison of the string pattern against the string str.
+    // See below for further details.
+
     return wildComp (pattern.begin(), pattern.end(), str.begin(), str.end());
 }
 
@@ -96,11 +113,11 @@ bool wildComp (std::string::const_iterator patternIt, std::string::const_iterato
                std::string::const_iterator strIt,     std::string::const_iterator strEnd) {
     //==============================================================================================
     // wildComp
-    //     Compares a pattern against a string to determine if the two match. In the pattern string,
-    //     the character '?' denotes any single character, and the character '*' denotes any number
-    //     of characters. All other characters are interpreted literally, though they are compared
-    //     without regard to case (for exampmle, 'a' matches 'A'). For case-sensitive matches, use
-    //     wildcompc().
+    //     Compares a pattern against a string (case sensitive) to determine if the two match. In
+    //     the pattern string, the character '?' denotes any single character, and the character '*'
+    //     denotes any number of characters. All other characters are interpreted literally, though
+    //     they are compared without regard to case (for exampmle, 'a' matches 'A'). For
+    //     case-insensitive matches, ensure that the pattern and string are both lowercase first.
     //
     // Parameters
     //     patternIt  - Iterator over the const pattern to compare with the string
@@ -122,7 +139,7 @@ bool wildComp (std::string::const_iterator patternIt, std::string::const_iterato
 
         // Stop testing on mismatch.
 
-        if ((*patternIt != '?') && (tolower(*patternIt) != tolower(*strIt)))
+        if ((*patternIt != '?') && *patternIt != *strIt)
             break;
 
         ++ patternIt;   // On a successful match, increment the pattern and the string and continue.
@@ -159,75 +176,6 @@ bool wildComp (std::string::const_iterator patternIt, std::string::const_iterato
             return false;
 
         ++ strIt;
-    }
-}
-
-
-
-bool wildCompCaseSensitive (const wchar_t *pattern, const wchar_t *string)
-{
-    //==============================================================================================
-    // wildCompCaseSensitive
-    //     Compares a pattern against a string to determine if the two match. In the pattern string,
-    //     the character '?' denotes any single character, and the character '*' denotes any number
-    //     of characters. All other characters are interpreted literally, and must match case. For
-    //     case-insensitive matching, use wildcomp.
-    //
-    // Parameters
-    //     pattern - The pattern to compare with the string
-    //     string  - The string to test for matching
-    //
-    // Returns
-    //     True if and only if the pattern matches the string. This function returns false if either
-    //     the pattern or the string are null pointers.
-    //==============================================================================================
-
-    if (!pattern || !string) return false;
-
-    // Scan through the single character matches.
-
-    while (*pattern && *string)
-    {
-        if (*pattern == L'*')  // If we've hit an asterisk, then drop down to the section below.
-            break;
-
-        // Stop testing on mismatch.
-
-        if ((*pattern != L'?') && (*pattern != *string))
-            break;
-
-        ++ pattern;    // On a successful match, increment the pattern and the string and continue.
-        ++ string;
-    }
-
-    // Unless we stopped on an asterisk, we're done matching. The only valid way to match at this
-    // point is if both the pattern and the string are exhausted.
-
-    if (*pattern != L'*')
-        return (*pattern == 0) && (*string == 0);
-
-    // Advance past the asterisk. Handle pathological cases where there is more than one asterisk
-    // in a row.
-
-    while (*pattern == L'*')
-        ++pattern;
-
-    // If the asterisk is the last character of the pattern, then we match any remainder,
-    // so return true.
-
-    if (*pattern == 0)
-        return true;
-
-    // We're at an asterisk with other patterns following, so recursively eat away at the string
-    // until we match or exhaust the string.
-
-    while (true)
-    {
-        if (wildCompCaseSensitive (pattern, string))
-            return true;
-
-        if (!*string++)
-            return false;
     }
 }
 
@@ -796,6 +744,8 @@ void PathMatcher::MatchDir (
         return;
     }
 
+// TODO: lowercase subPattern here.
+
     // If we have a literal subdirectory name (or filename), then just provide that name to the
     // find-file functions.
 
@@ -821,6 +771,8 @@ void PathMatcher::MatchDir (
         auto entryName = dirEntry->name();
 
         if (isDotsDir(entryName)) continue;
+
+// TODO: Create lowercase of entryName here, use for wildcomp call.
 
         if (!fliteral && !wildComp (subPattern, entryName))
             continue;
@@ -905,6 +857,8 @@ void PathMatcher::HandleEllipsisSubpath (
         }
     }
 
+// TODO: lowercase ellipsis_prefix here.
+
     FetchAll (pathend, ellipsis_prefix);
     return;
 }
@@ -958,6 +912,8 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
         // If there's an ellipsis prefix, then ensure first that we match against it before
         // descending further.
+
+// TODO: Create lowercase of fileName here, use in wildcomp call.
 
         if (ellipsis_prefix && !wildComp (ellipsis_prefix, fileName))
             continue;

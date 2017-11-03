@@ -40,19 +40,15 @@
 
 
 
-namespace PMatcher {
+namespace PathMatcher {
 
 
     // Standalone Function Declarations
 
-// Wildcard comparison test. Case insensitive.
+// Wildcard comparison test, case sensitive.
 bool wildComp (const std::string pattern, const std::string str);
 bool wildComp (std::string::const_iterator patternIt, std::string::const_iterator patternEnd,
                std::string::const_iterator strIt,     std::string::const_iterator strEnd);
-             
-
-// Wildcard comparison test. Case sensitive.
-bool wildCompCaseSensitive (const wchar_t *pattern, const wchar_t *string);
 
 // Path matching test, with ellipses (directory-spanning path portion), asterisk (substring of
 // directory or file name), and question mark (matches any single character).
