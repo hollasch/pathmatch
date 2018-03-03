@@ -41,7 +41,7 @@
 
 
 using namespace FileSystemProxy;
-using std::string;
+using std::wstring;
 using std::unique_ptr;
 
 
@@ -49,7 +49,7 @@ using std::unique_ptr;
 // PathMatch Namespace
 // =================================================================================================
 
-namespace PathMatcher {
+namespace PathMatch {
 
 
 
@@ -62,19 +62,29 @@ namespace PathMatcher {
     // Helper Functions
     // ==================
 
-static bool isSlash (const char c) {
+static bool isSlash (const wchar_t c)
+{
     // Return true if and only if the character is a forward or backward slash.
-    return ((c == '/') || (c == '\\'));
+    return (c == L'/') || (c == L'\\');
 }
 
 
-static bool isDoubleAsterisk (const string str, string::const_iterator strIt) {
+static bool isDoubleAsterisk (const wstring str, wstring::const_iterator strIt)
+{
     // Return true if the string iterator points to a sequence of two asterisk characters.
     return ((strIt[0] == '*') && ((strIt+1) != str.end()) && (strIt[1] == '*'));
 }
 
 
-static bool isEllipsis (const string str, string::const_iterator strIt) {
+static bool isDoubleAsterisk (const wchar_t* str)
+{
+    // Return true if the string begins with a sequence of two asterisk characters.
+    return (str[0] == L'*') && (str[1] == L'*');
+}
+
+
+static bool isEllipsis (const wstring str, wstring::const_iterator strIt)
+{
     // Return true iff string iterator begins with "...".
     auto strEnd = str.end();
     return (
@@ -85,7 +95,15 @@ static bool isEllipsis (const string str, string::const_iterator strIt) {
 }
 
 
-static bool isMultiWildStr (const string str, string::const_iterator strIt) {
+static bool isEllipsis (const wchar_t* str)
+{
+    // Return true iff string begins with "...".
+    return (str[0] == L'.') && (str[1] == L'.') && (str[2] == L'.');
+}
+
+
+static bool isMultiWildStr (const wstring str, wstring::const_iterator strIt)
+{
     // Return true if and only if the string begins with a wildcard that matches
     // multiple characters ("*" or "..." or "**").
     auto strEnd = str.end();
@@ -93,24 +111,29 @@ static bool isMultiWildStr (const string str, string::const_iterator strIt) {
 }
 
 
-static bool isEqualCaseSensitive (char a, char b) {
-    return a == b;
+static bool isMultiWildStr (const wchar_t* str)
+{
+    // Return true if and only if the string begins with a wildcard that matches
+    // multiple characters ("*" or "..." or "**").
+    return (str[0] == L'*') || isEllipsis(str);
 }
 
-static bool isEqualCaseInsensitive (char a, char b) {
-}
 
-
-bool wildComp (const string pattern, const string str) {
+bool wildComp (const wstring& pattern, const wstring& str)
+{
     // Performs a case-sensitive comparison of the string pattern against the string str.
     // See below for further details.
 
-    return wildComp (pattern.begin(), pattern.end(), str.begin(), str.end());
+    return wildComp (pattern.cbegin(), pattern.cend(), str.cbegin(), str.cend());
 }
 
 
-bool wildComp (std::string::const_iterator patternIt, std::string::const_iterator patternEnd,
-               std::string::const_iterator strIt,     std::string::const_iterator strEnd) {
+bool wildComp (
+    std::wstring::const_iterator patternIt,
+    std::wstring::const_iterator patternEnd,
+    std::wstring::const_iterator strIt,
+    std::wstring::const_iterator strEnd)
+{
     //==============================================================================================
     // wildComp
     //     Compares a pattern against a string (case sensitive) to determine if the two match. In
@@ -770,12 +793,14 @@ void PathMatcher::MatchDir (
 
         auto entryName = dirEntry->name();
 
-        if (isDotsDir(entryName)) continue;
+        if (isDotsDir(entryName.c_str())) continue;
 
 // TODO: Create lowercase of entryName here, use for wildcomp call.
 
-        if (!fliteral && !wildComp (subPattern, entryName))
-            continue;
+        if (!fliteral) {
+            auto subPatternString = std::make_unique<wstring> (subPattern);
+            if (!wildComp (*subPatternString, entryName)) continue;
+        }
 
         // Skip files if the pattern ended in a slash or if the original pattern specified
         // directories only.
@@ -786,7 +811,7 @@ void PathMatcher::MatchDir (
         }
         else if (fdescend)
         {
-            auto pathend_new = AppendPath (pathend, entryName);
+            auto pathend_new = AppendPath (pathend, entryName.c_str());
 
             if (!pathend_new) continue;
 
@@ -799,7 +824,7 @@ void PathMatcher::MatchDir (
         {
             // Construct full relative entry path.
 
-            if (AppendPath(pathend, entryName))
+            if (AppendPath(pathend, entryName.c_str()))
             {
                 if (!m_callback (m_path, *dirEntry, m_callbackData))
                     break;
@@ -903,7 +928,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
         auto fileName = dirEntry->name();
 
-        if (isDotsDir(fileName)) continue;
+        if (isDotsDir(fileName.c_str())) continue;
 
         // Skip file entries if we're only looking for directories.
 
@@ -918,7 +943,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
         if (ellipsis_prefix && !wildComp (ellipsis_prefix, fileName))
             continue;
 
-        auto pathEndNew = AppendPath (pathend, fileName);
+        auto pathEndNew = AppendPath (pathend, fileName.c_str());
 
         if (!pathEndNew) break;
 

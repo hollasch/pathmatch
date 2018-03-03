@@ -30,11 +30,15 @@
 #include "pathmatcher.h"
 #include "FileSystemProxyWindows.h"
 
+#include <string>
 #include <iostream>
 
-using namespace std;
-using namespace PMatcher;
-using namespace FSProxy;
+using namespace PathMatch;
+using namespace FileSystemProxy;
+
+using std::wstring;
+using std::wcout;
+using std::wcerr;
 
 static const wstring version = L"0.1.1";
 
@@ -95,7 +99,7 @@ int wmain (int argc, wchar_t *argv[])
     // Main
     //==========================================================================
 
-    FileSysProxyWindows fsProxy;    // File System Proxy Object
+    WindowsFS fsProxy;    // File System Proxy Object
     PathMatcher matcher {fsProxy};  // PathMatcher Object
 
     ReportOpts reportOpts {      // Options for callback routine
@@ -107,7 +111,7 @@ int wmain (int argc, wchar_t *argv[])
 
     // Usage-printing helper function.
     auto exitWithUsage = [] () {
-        wcout << usage_header << endl << usage;
+        wcout << usage_header << L'\n' << usage;
         exit(0);
     };
 
@@ -170,7 +174,7 @@ int wmain (int argc, wchar_t *argv[])
             }
 
             case L'v': case L'V':                // Version Query
-            {   wcout << version << endl;
+            {   wcout << version << L'\n';
                 exit(0);
             }
 
@@ -238,8 +242,7 @@ bool mtCallback (
         {
             wcerr << L"pathmatch: Unable to convert \""
                   << entry
-                  << L"\" to absolute path."
-                  << endl;
+                  << L"\" to absolute path.\n";
             return false;
         }
 
@@ -251,7 +254,7 @@ bool mtCallback (
     for (const wchar_t *ptr = item;  *ptr;  ++ptr)
         wcout << (isSlash(*ptr) ? reportOpts->slashChar : *ptr);
 
-    wcout << endl;
+    wcout << L'\n';
 
     return true;   // Continue enumeration.
 }

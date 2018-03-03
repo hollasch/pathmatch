@@ -59,6 +59,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\src;$(SolutionDir)..\..\src\PathMatcher;$(SolutionDir)..\..\ext\FileSystemProxy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -77,6 +78,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\src;$(SolutionDir)..\..\src\PathMatcher;$(SolutionDir)..\..\ext\FileSystemProxy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -87,6 +89,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\ext\FileSystemProxy\fileSystemProxy.cpp" />
     <ClCompile Include="..\..\ext\FileSystemProxy\fileSystemProxyWindows.cpp" />
     <ClCompile Include="..\..\src\pathmatch.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\..\src\pathmatchlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -95,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\ext\FileSystemProxy\FileSystemProxy.h" />
+    <ClInclude Include="..\..\ext\FileSystemProxy\fileSystemProxyWindows.h" />
     <ClInclude Include="..\..\src\pathmatcher\pathmatcher.h" />
   </ItemGroup>
   <ItemGroup>
