@@ -36,6 +36,8 @@
 #include <stdlib.h>
 #include <windows.h>
 #include <string>
+#include <filesystem>
+
 #include <FileSystemProxy.h>
 
 
