@@ -4,7 +4,7 @@
 //     This program returns all files and directories matching the specified pattern.
 //
 // _________________________________________________________________________________________________
-// Copyright © 2017 Steve Hollasch
+// Copyright © 2018 Steve Hollasch
 //
 // MIT License
 //
@@ -40,7 +40,7 @@ using std::wstring;
 using std::wcout;
 using std::wcerr;
 
-static const wstring version = L"0.1.1";
+static const wstring version = L"0.2.0-beta";
 
     // Usage Information
 
