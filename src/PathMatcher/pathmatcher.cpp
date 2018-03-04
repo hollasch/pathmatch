@@ -86,7 +86,7 @@ static bool isDoubleAsterisk (const wchar_t* str)
 static bool isEllipsis (wstring::const_iterator strIt, wstring::const_iterator end)
 {
     // Return true iff string iterator begins with "...".
-    return ((end - strIt) >= 3) && (strIt[0] == '.') && (strIt[1] == '.') && (strIt[2] == '.');
+    return ((end - strIt) >= 3) && (strIt[0] == L'.') && (strIt[1] == L'.') && (strIt[2] == L'.');
 }
 
 
@@ -151,12 +151,12 @@ bool wildComp (
 
     while ((patternIt != patternEnd) && (strIt != strEnd))
     {
-        if (*patternIt == '*')  // If we've hit an asterisk, then drop down to the section below.
+        if (*patternIt == L'*')  // If we've hit an asterisk, then drop down to the section below.
             break;
 
         // Stop testing on mismatch.
 
-        if ((*patternIt != '?') && *patternIt != *strIt)
+        if ((*patternIt != L'?') && *patternIt != *strIt)
             break;
 
         ++ patternIt;   // On a successful match, increment the pattern and the string and continue.
@@ -166,13 +166,13 @@ bool wildComp (
     // Unless we stopped on an asterisk, we're done matching. The only valid way to match at this
     // point is if both the pattern and the string are exhausted.
 
-    if (*patternIt != '*')
+    if (*patternIt != L'*')
         return (patternIt == patternEnd) && (strIt == strEnd);
 
     // Advance past the asterisk. Handle pathological cases where there is more than one asterisk
     // in a row.
 
-    while (*patternIt == '*')
+    while (*patternIt == L'*')
         ++patternIt;
 
     // If the asterisk is the last character of the pattern, then we match any remainder,
