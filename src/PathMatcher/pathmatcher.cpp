@@ -1,5 +1,5 @@
 //==================================================================================================
-// PathMatch.cpp
+// pathmatcher.cpp
 //
 //     Routines for matching wildcard path specifications against a given directory tree.
 //
@@ -69,10 +69,10 @@ static bool isSlash (const wchar_t c)
 }
 
 
-static bool isDoubleAsterisk (const wstring str, wstring::const_iterator strIt)
+static bool isDoubleAsterisk (wstring::const_iterator strIt, wstring::const_iterator end)
 {
     // Return true if the string iterator points to a sequence of two asterisk characters.
-    return ((strIt[0] == '*') && ((strIt+1) != str.end()) && (strIt[1] == '*'));
+    return ((end - strIt) > 1) && (strIt[0] == L'*') && (strIt[1] == L'*');
 }
 
 
@@ -83,15 +83,10 @@ static bool isDoubleAsterisk (const wchar_t* str)
 }
 
 
-static bool isEllipsis (const wstring str, wstring::const_iterator strIt)
+static bool isEllipsis (wstring::const_iterator strIt, wstring::const_iterator end)
 {
     // Return true iff string iterator begins with "...".
-    auto strEnd = str.end();
-    return (
-        ((strIt+0) != strEnd) && (strIt[0] == '.') && 
-        ((strIt+1) != strEnd) && (strIt[1] == '.') && 
-        ((strIt+2) != strEnd) && (strIt[2] == '.')
-    );
+    return ((end - strIt) >= 3) && (strIt[0] == '.') && (strIt[1] == '.') && (strIt[2] == '.');
 }
 
 
@@ -102,12 +97,11 @@ static bool isEllipsis (const wchar_t* str)
 }
 
 
-static bool isMultiWildStr (const wstring str, wstring::const_iterator strIt)
+static bool isMultiWildStr (wstring::const_iterator strIt, wstring::const_iterator end)
 {
     // Return true if and only if the string begins with a wildcard that matches
     // multiple characters ("*" or "..." or "**").
-    auto strEnd = str.end();
-    return (strIt != strEnd) && ((*strIt == '*') || isEllipsis(str, strIt));
+    return (strIt != end) && ((*strIt == L'*') || isEllipsis(strIt, end));
 }
 
 
@@ -401,7 +395,6 @@ PathMatcher::PathMatcher (FSProxy &fsProxy)
 }
 
 
-
 PathMatcher::~PathMatcher ()
 {
     // PathMatcher Destructor
@@ -411,7 +404,6 @@ PathMatcher::~PathMatcher ()
 }
 
 
-
 size_t PathMatcher::PathSpaceLeft (const wchar_t *pathend) const
 {
     // Returns the number of characters that can be appended to the m_path
@@ -419,7 +411,6 @@ size_t PathMatcher::PathSpaceLeft (const wchar_t *pathend) const
 
     return (m_fsProxy.maxPathLength() + 1) - (pathend - m_path) - 1;
 }
-
 
 
 wchar_t* PathMatcher::AppendPath (wchar_t *pathend, const wchar_t *str)
@@ -448,7 +439,6 @@ wchar_t* PathMatcher::AppendPath (wchar_t *pathend, const wchar_t *str)
 
     return pathend;
 }
-
 
 
 bool PathMatcher::AllocPatternBuff (size_t requestedSize)
@@ -480,7 +470,6 @@ bool PathMatcher::AllocPatternBuff (size_t requestedSize)
 
     return true;
 }
-
 
 
 bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
@@ -628,7 +617,6 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 }
 
 
-
 bool PathMatcher::Match (
     const wchar_t*     path_pattern,
     MatchTreeCallback* callback_func,
@@ -706,7 +694,6 @@ bool PathMatcher::Match (
 
     return true;
 }
-
 
 
 void PathMatcher::MatchDir (
@@ -837,7 +824,6 @@ void PathMatcher::MatchDir (
 }
 
 
-
 void PathMatcher::HandleEllipsisSubpath (
     wchar_t       *pathend,    // One past the last character
     const wchar_t *pattern,    // Pointer to the beginning of the current subdir of the full pattern
@@ -887,7 +873,6 @@ void PathMatcher::HandleEllipsisSubpath (
     FetchAll (pathend, ellipsis_prefix);
     return;
 }
-
 
 
 void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
@@ -957,7 +942,6 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
             FetchAll (pathEndNew, nullptr);
     }
 }
-
 
 
 }; // Namespace PathMatch
