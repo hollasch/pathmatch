@@ -42,6 +42,7 @@
 
 using namespace FileSystemProxy;
 using std::wstring;
+using std::make_unique;
 using std::unique_ptr;
 
 
@@ -389,8 +390,8 @@ PathMatcher::PathMatcher (FSProxy &fsProxy)
   : m_fsProxy(fsProxy)
 {
     // PathMatcher Default Constructor
-
-    m_path = new wchar_t [m_fsProxy.maxPathLength() + 1];
+    size_t pathSize = m_fsProxy.maxPathLength() + 1;
+    m_path = new wchar_t [pathSize];
     m_path[0] = 0;
 }
 
@@ -398,7 +399,6 @@ PathMatcher::PathMatcher (FSProxy &fsProxy)
 PathMatcher::~PathMatcher ()
 {
     // PathMatcher Destructor
-
     delete[] m_path;
     delete[] m_pattern;
 }
@@ -785,7 +785,7 @@ void PathMatcher::MatchDir (
 // TODO: Create lowercase of entryName here, use for wildcomp call.
 
         if (!fliteral) {
-            auto subPatternString = std::make_unique<wstring> (subPattern);
+            auto subPatternString = make_unique<wstring> (subPattern);
             if (!wildComp (*subPatternString, entryName)) continue;
         }
 
@@ -905,7 +905,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
     pathend[0] = L'*';
     pathend[1] = 0;
 
-    unique_ptr<DirectoryIterator> dirEntry (m_fsProxy.newDirectoryIterator(m_path));
+    auto dirEntry = unique_ptr<DirectoryIterator> (m_fsProxy.newDirectoryIterator(m_path));
 
     while (dirEntry->next())
     {
