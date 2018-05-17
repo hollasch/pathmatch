@@ -4,6 +4,8 @@
 //     This program returns all files and directories matching the specified pattern.
 //
 // _________________________________________________________________________________________________
+// Copyright 2010 Steve Hollasch
+//
 // MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
