@@ -4,8 +4,6 @@
 // entries in a subdirectory tree.
 //
 // _________________________________________________________________________________________________
-// Copyright © 2017 Steve Hollasch
-//
 // MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
