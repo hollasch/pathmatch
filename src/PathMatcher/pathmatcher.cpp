@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <io.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <windows.h>
 
 #include <filesystem>
@@ -389,7 +390,7 @@ PathMatcher::PathMatcher (FSProxy &fsProxy)
   : m_fsProxy(fsProxy)
 {
     // PathMatcher Default Constructor
-    size_t pathSize = m_fsProxy.maxPathLength() + 1;
+    size_t pathSize = mc_MaxPathLength + 1;    // Temporary Windows max path length.
     m_path = new wchar_t [pathSize];
     m_path[0] = 0;
 }
@@ -408,7 +409,7 @@ size_t PathMatcher::PathSpaceLeft (const wchar_t *pathend) const
     // Returns the number of characters that can be appended to the m_path
     // string, while allowing room for a terminating character.
 
-    return (m_fsProxy.maxPathLength() + 1) - (pathend - m_path) - 1;
+    return (mc_MaxPathLength + 1) - (pathend - m_path) - 1;
 }
 
 
@@ -685,7 +686,7 @@ bool PathMatcher::Match (
 
         rootlen = rootend - m_pattern;
 
-        if (FAILED(wcsncpy_s (m_path, (m_fsProxy.maxPathLength() + 1), m_pattern, rootlen)))
+        if (FAILED(wcsncpy_s (m_path, (mc_MaxPathLength + 1), m_pattern, rootlen)))
             return false;
     }
 

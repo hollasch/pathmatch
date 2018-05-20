@@ -79,6 +79,10 @@ class PathMatcher
 
   private:   // Private Member Variables
 
+    // Temporarily define a maximum path length. This is the Windows max path length, but it appears
+    // that std::filesystem has no maximum path length (or it's not exposed).
+    static const auto mc_MaxPathLength { 260 };
+
     FileSystemProxy::FSProxy& m_fsProxy;                  // File System Proxy
     MatchTreeCallback*        m_callback { nullptr };     // Match Callback Function
     void*                     m_callbackData { nullptr }; // Callback Function Data
