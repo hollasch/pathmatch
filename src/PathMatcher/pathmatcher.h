@@ -35,6 +35,8 @@
 #include <io.h>
 #include <stdlib.h>
 #include <windows.h>
+
+#include <filesystem>
 #include <string>
 
 #include <FileSystemProxy.h>
@@ -55,8 +57,7 @@ bool wildComp (std::wstring::const_iterator patternIt, std::wstring::const_itera
 bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
 // The callback function signature that PathMatcher uses to report back all matching entries.
-using MatchTreeCallback =
-    bool (const wchar_t* entry, const FileSystemProxy::DirectoryIterator& fileData, void* userData);
+using MatchTreeCallback = bool (const wchar_t* entry, const std::filesystem::path& path, void* userData);
 
 
 class PathMatcher

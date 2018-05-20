@@ -30,17 +30,19 @@
 #include "pathmatcher.h"
 #include "FileSystemProxyWindows.h"
 
-#include <string>
+#include <filesystem>
 #include <iostream>
+#include <string>
 
 using namespace PathMatch;
 using namespace FileSystemProxy;
+namespace fs = std::filesystem;
 
 using std::wstring;
 using std::wcout;
 using std::wcerr;
 
-static const wstring version = L"0.2.0-beta";
+static const wstring version = L"0.2.1-beta";
 
     // Usage Information
 
@@ -200,9 +202,9 @@ static inline bool isSlash (wchar_t c)
 
 
 bool mtCallback (
-    const wchar_t*           entry,
-    const DirectoryIterator& filedata,
-    void*                    cbdata)
+    const wchar_t*  entry,
+    const fs::path& path,
+    void*           cbdata)
 {
     //==========================================================================
     // mtcallback
@@ -227,7 +229,8 @@ bool mtCallback (
 
     // If we are to report only files and this entry is a directory, then return without reporting.
 
-    if (reportOpts->filesOnly && (filedata.isDirectory()))
+    auto isDirectory = fs::is_directory(path);
+    if (reportOpts->filesOnly && isDirectory)
         return true;
 
     if (!reportOpts->fullPath)

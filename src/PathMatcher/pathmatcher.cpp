@@ -29,18 +29,20 @@
 
 #include "pathmatcher.h"
 
-#include <locale>
-#include <string>
-#include <memory>
-
+#include <assert.h>
 #include <io.h>
 #include <stdio.h>
-#include <assert.h>
-
 #include <windows.h>
+
+#include <filesystem>
+#include <locale>
+#include <memory>
+#include <string>
 
 
 using namespace FileSystemProxy;
+namespace fs = std::filesystem;
+
 using std::wstring;
 using std::make_unique;
 using std::unique_ptr;
@@ -751,7 +753,7 @@ void PathMatcher::MatchDir (
         return;
     }
 
-// TODO: lowercase subPattern here.
+    // TODO: lowercase subPattern here.
 
     // If we have a literal subdirectory name (or filename), then just provide that name to the
     // find-file functions.
@@ -779,7 +781,7 @@ void PathMatcher::MatchDir (
 
         if (isDotsDir(entryName.c_str())) continue;
 
-// TODO: Create lowercase of entryName here, use for wildcomp call.
+        // TODO: Create lowercase of entryName here, use for wildcomp call.
 
         if (!fliteral) {
             auto subPatternString = make_unique<wstring> (subPattern);
@@ -810,7 +812,7 @@ void PathMatcher::MatchDir (
 
             if (AppendPath(pathend, entryName.c_str()))
             {
-                if (!m_callback (m_path, *dirEntry, m_callbackData))
+                if (!m_callback (m_path, fs::path(m_path), m_callbackData))
                     break;
             }
         }
@@ -865,7 +867,7 @@ void PathMatcher::HandleEllipsisSubpath (
         }
     }
 
-// TODO: lowercase ellipsis_prefix here.
+    // TODO: lowercase ellipsis_prefix here.
 
     FetchAll (pathend, ellipsis_prefix);
     return;
@@ -920,7 +922,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
         // If there's an ellipsis prefix, then ensure first that we match against it before
         // descending further.
 
-// TODO: Create lowercase of fileName here, use in wildcomp call.
+        // TODO: Create lowercase of fileName here, use in wildcomp call.
 
         if (ellipsis_prefix && !wildComp (ellipsis_prefix, fileName))
             continue;
@@ -931,7 +933,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
         if (!m_ellipsisPattern || pathMatch(m_ellipsisPattern, m_ellipsisPath))
         {
-            if (!m_callback (m_path, *dirEntry, m_callbackData))
+            if (!m_callback (m_path, fs::path(m_path), m_callbackData))
                 return;
         }
 
