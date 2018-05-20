@@ -42,7 +42,7 @@ using std::wstring;
 using std::wcout;
 using std::wcerr;
 
-static const wstring version = L"0.2.1-beta";
+static const wstring version = L"0.2.2-beta";
 
     // Usage Information
 
@@ -51,33 +51,37 @@ static const wstring usage_header {
 };
 
 static const wstring usage {
-    //----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
-    L"pathmatch: Report files and directories matching the specified pattern\n"
-    L"Usage    : pathmatch [-s<slash>] [-f] [-v] <pattern> ... <pattern>\n"
-    L"\n"
-    L"    pathmatch finds and reports all files and directories matching wildcard\n"
-    L"    patterns. These patterns may contain the special characters '?', '*', and\n"
-    L"    '...'. The '?' pattern matches any single character, '*' matches multiple\n"
-    L"    characters except slashes, and '...' matches multiple characters including\n"
-    L"    slashes. For example, the following patterns all match the file\n"
-    L"    \"abc\\def\\ghi\\jkl\": \"abc\\d?f\\??i\\jkl\", \"abc\\*\\*\\jkl\", \"abc\\...\\jkl\", and\n"
-    L"    \"ab...kl\".\n"
-    L"\n"
-    L"    The following command options are supported:\n"
-    L"\n"
-    L"    -s<slash>  Specifies the slash direction to be reported. By default,\n"
-    L"               slashes will be back slashes. Use \"-s/\" to report paths\n"
-    L"               with forward slashes.\n"
-    L"\n"
-    L"    -a         Report absolute paths. By default, reported paths are\n"
-    L"               relative to the current working directory.\n"
-    L"\n"
-    L"    -f         Report files only (no directories). To report directories\n"
-    L"               only, append a slash to the pattern.\n"
-    L"\n"
-    L"    -v         Print version information.\n"
-    L"\n"
-};
+//----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
+LR"(
+pathmatch: Report files and directories matching the specified pattern
+Usage    : pathmatch [-s<slash>] [-f] [-v] <pattern> ... <pattern>
+
+    `pathmatch` finds and reports all files and directories matching wildcard
+    patterns. These patterns may contain the special characters '?', '*', and
+    '...'. The '?' pattern matches any single character, '*' matches multiple
+    characters except slashes, and '...' matches multiple characters including
+    slashes. For example, the following patterns all match the file
+    "abc\def\ghi\jkl": "abc\d?f\??i\jkl", "abc\*\*\jkl", "abc\...\jkl", and
+    "ab...kl".
+
+    The following command options are supported:
+
+    -s<slash>
+        Specifies the slash direction to be reported. By default, slashes will
+        be back slashes. Use "-s/" to report paths with forward slashes.
+
+    -a
+        Report absolute paths. By default, reported paths are relative to the
+        current working directory.
+
+    -f
+        Report files only (no directories). To report directories only, append
+        a slash to the pattern.
+
+    -v
+        Print version information.
+
+)"};
 
 
 MatchTreeCallback mtCallback;    // Matching Entry Callback Routine
