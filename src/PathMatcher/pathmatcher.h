@@ -36,14 +36,12 @@
 #include <stdlib.h>
 #include <windows.h>
 #include <string>
-#include <filesystem>
 
 #include <FileSystemProxy.h>
 
 
 
 namespace PathMatch {
-
 
     // Standalone Function Declarations
 
@@ -56,13 +54,10 @@ bool wildComp (std::wstring::const_iterator patternIt, std::wstring::const_itera
 // directory or file name), and question mark (matches any single character).
 bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
-
-
 // The callback function signature that PathMatcher uses to report back all matching entries.
-typedef bool (MatchTreeCallback) (
-    const wchar_t* entry,
-    const FileSystemProxy::DirectoryIterator& fileData,
-    void* userData);
+using MatchTreeCallback =
+    bool (const wchar_t* entry, const FileSystemProxy::DirectoryIterator& fileData, void* userData);
+
 
 class PathMatcher
 {
@@ -80,7 +75,6 @@ class PathMatcher
     // The main match procedure.
 
     bool Match (const wchar_t *pattern, MatchTreeCallback* callback, void* userData);
-
 
   private:   // Private Member Variables
 

@@ -198,7 +198,6 @@ bool wildComp (
 }
 
 
-
 bool pathMatch (const wchar_t *pattern, const wchar_t *path)
 {
     //==============================================================================================
@@ -355,7 +354,6 @@ bool pathMatch (const wchar_t *pattern, const wchar_t *path)
 // PathMatcher Class Implementation
 //==================================================================================================
 
-
     // ==================
     // Helper Functions
     // ==================
@@ -379,7 +377,6 @@ static bool isUpDir (const wchar_t *str)
     // Return true if string begins with parent ("..") subpath.
     return (str[0]==L'.') && (str[1]==L'.') && (!str[2] || isSlash(str[2]));
 }
-
 
 
     // ============================
