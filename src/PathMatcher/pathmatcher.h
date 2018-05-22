@@ -57,7 +57,10 @@ bool wildComp (std::wstring::const_iterator patternIt, std::wstring::const_itera
 bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
 // The callback function signature that PathMatcher uses to report back all matching entries.
-using MatchTreeCallback = bool (const wchar_t* entry, const std::filesystem::path& path, void* userData);
+using MatchTreeCallback = bool (
+    const std::filesystem::path& path,
+    const std::filesystem::directory_entry& dirEntry,
+    void* userData);
 
 
 class PathMatcher

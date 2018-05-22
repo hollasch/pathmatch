@@ -772,13 +772,13 @@ void PathMatcher::MatchDir (
         pathend[1] = 0;
     }
 
-    unique_ptr<DirectoryIterator> dirEntry { m_fsProxy.newDirectoryIterator(m_path) };
+    auto fsPath = fs::path(m_path);
 
-    while (dirEntry->next())
+    for (const auto& dirEntry : fs::directory_iterator(fsPath))
     {
         // Ignore "." and ".." entries.
 
-        auto entryName = dirEntry->name();
+        auto entryName = dirEntry.path().filename();
 
         if (isDotsDir(entryName.c_str())) continue;
 
@@ -792,7 +792,8 @@ void PathMatcher::MatchDir (
         // Skip files if the pattern ended in a slash or if the original pattern specified
         // directories only.
 
-        if ((m_dirsOnly || fdirmatch) && !dirEntry->isDirectory())
+        auto isDirectory = fs::is_directory(dirEntry.status());
+        if ((m_dirsOnly || fdirmatch) && !isDirectory)
         {
             // Do nothing.
         }
@@ -813,7 +814,7 @@ void PathMatcher::MatchDir (
 
             if (AppendPath(pathend, entryName.c_str()))
             {
-                if (!m_callback (m_path, fs::path(m_path), m_callbackData))
+                if (!m_callback (fsPath / entryName, dirEntry, m_callbackData))
                     break;
             }
         }
@@ -902,43 +903,37 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 
     if (PathSpaceLeft(pathend) < 1) return;
 
-    pathend[0] = L'*';
-    pathend[1] = 0;
+    auto fsPath = fs::path(m_path);
 
-    auto dirEntry = unique_ptr<DirectoryIterator> (m_fsProxy.newDirectoryIterator(m_path));
-
-    while (dirEntry->next())
+    for (const auto& dirEntry : fs::directory_iterator(fsPath))
     {
-        // Ignore "." and ".." entries.
-
-        auto fileName = dirEntry->name();
-
-        if (isDotsDir(fileName.c_str())) continue;
+        auto entryName = dirEntry.path().filename();
 
         // Skip file entries if we're only looking for directories.
 
-        if (m_dirsOnly && !dirEntry->isDirectory())
+        auto isDirectory = fs::is_directory(dirEntry.status());
+        if (m_dirsOnly && !isDirectory)
             continue;
 
         // If there's an ellipsis prefix, then ensure first that we match against it before
         // descending further.
 
-        // TODO: Create lowercase of fileName here, use in wildcomp call.
+        // TODO: Create lowercase of entryName here, use in wildcomp call.
 
-        if (ellipsis_prefix && !wildComp (ellipsis_prefix, fileName))
+        if (ellipsis_prefix && !wildComp (ellipsis_prefix, entryName))
             continue;
 
-        auto pathEndNew = AppendPath (pathend, fileName.c_str());
+        auto pathEndNew = AppendPath (pathend, entryName.c_str());
 
         if (!pathEndNew) break;
 
         if (!m_ellipsisPattern || pathMatch(m_ellipsisPattern, m_ellipsisPath))
         {
-            if (!m_callback (m_path, fs::path(m_path), m_callbackData))
+            if (!m_callback (fsPath / entryName, dirEntry, m_callbackData))
                 return;
         }
 
-        if (dirEntry->isDirectory())
+        if (isDirectory)
             FetchAll (pathEndNew, nullptr);
     }
 }

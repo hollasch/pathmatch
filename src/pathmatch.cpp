@@ -42,7 +42,7 @@ using std::wstring;
 using std::wcout;
 using std::wcerr;
 
-static const wstring version = L"0.2.2-beta";
+static const wstring version = L"0.2.3-beta";
 
     // Usage Information
 
@@ -206,17 +206,17 @@ static inline bool isSlash (wchar_t c)
 
 
 bool mtCallback (
-    const wchar_t*  entry,
     const fs::path& path,
-    void*           cbdata)
+    const fs::directory_entry& dirEntry,
+    void* cbdata)
 {
     //==========================================================================
     // mtcallback
     //     This is the callback function for the PathMatcher object.
     //
     // Parameters
-    //     entry ....... The relative matching file or directory
-    //     attribs ..... The file or directory's attributes
+    //     path ........ The full path of the matching file or directory
+    //     dirEntry .... The directory entry for the matching file or directory
     //     cbdata ...... Pointer to the report options
     //
     // Returns
@@ -229,7 +229,7 @@ bool mtCallback (
     auto reportOpts = static_cast<const ReportOpts*>(cbdata);
 
     auto fullPath = new wchar_t [reportOpts->maxPathLength + 1];  // Optional Full Path
-    auto item = entry;       // Pointer to Matching Entry
+    auto item = path;       // Pointer to Matching Entry
 
     // If we are to report only files and this entry is a directory, then return without reporting.
 
@@ -237,8 +237,14 @@ bool mtCallback (
     if (reportOpts->filesOnly && isDirectory)
         return true;
 
+    // TODO: Handle absolute and relative paths (reportOpts->fullPath).
+    // TODO: Handle desired slash character (reportOpts->slashChar).
+
+    wcout << path.wstring() << '\n';
+
+    #if 0
     if (!reportOpts->fullPath)
-        item = entry;
+        item = path;
     else
     {
         // If we are to convert the default relative path to a full path, use the stdlib _fullpath
@@ -253,15 +259,17 @@ bool mtCallback (
             return false;
         }
 
-        item = fullPath;
+        item = fs::path(fullPath);
     }
 
     // Print out the matching item, converted to the requested slash type.
 
     for (const wchar_t *ptr = item;  *ptr;  ++ptr)
+    for (auto wchar_t : item
         wcout << (isSlash(*ptr) ? reportOpts->slashChar : *ptr);
 
     wcout << L'\n';
+    #endif
 
     return true;   // Continue enumeration.
 }
