@@ -39,8 +39,6 @@
 #include <filesystem>
 #include <string>
 
-#include <FileSystemProxy.h>
-
 
 
 namespace PathMatch {
@@ -73,22 +71,21 @@ class PathMatcher
 
   public:
 
-    PathMatcher (FileSystemProxy::FSProxy &fsProxy);
+    PathMatcher();
     ~PathMatcher();
 
     // The main match procedure.
 
     bool Match (const wchar_t *pattern, MatchTreeCallback* callback, void* userData);
 
-  private:   // Private Member Variables
-
     // Temporarily define a maximum path length. This is the Windows max path length, but it appears
     // that std::filesystem has no maximum path length (or it's not exposed).
     static const auto mc_MaxPathLength { 260 };
 
-    FileSystemProxy::FSProxy& m_fsProxy;                  // File System Proxy
-    MatchTreeCallback*        m_callback { nullptr };     // Match Callback Function
-    void*                     m_callbackData { nullptr }; // Callback Function Data
+  private:   // Private Member Variables
+
+    MatchTreeCallback* m_callback { nullptr };     // Match Callback Function
+    void*              m_callbackData { nullptr }; // Callback Function Data
 
     wchar_t* m_path;                               // Current path
     wchar_t* m_pattern { nullptr };                // Wildcarded portion of the given pattern

@@ -28,14 +28,12 @@
 //==================================================================================================
 
 #include "pathmatcher.h"
-#include "FileSystemProxyWindows.h"
 
 #include <filesystem>
 #include <iostream>
 #include <string>
 
 using namespace PathMatch;
-using namespace FileSystemProxy;
 namespace fs = std::filesystem;
 
 using std::wstring;
@@ -105,14 +103,13 @@ int wmain (int argc, wchar_t *argv[])
     // Main
     //==========================================================================
 
-    WindowsFS fsProxy;    // File System Proxy Object
-    PathMatcher matcher {fsProxy};  // PathMatcher Object
+    PathMatcher matcher;  // PathMatcher Object
 
     ReportOpts reportOpts {      // Options for callback routine
         L'\\',                   // slashChar:     Default slashes are backward.
         false,                   // fullPath:      Default to relative paths.
         false,                   // filesOnly:     Default to report files and directories
-        fsProxy.maxPathLength()  // maxPathLength: Use file system proxy value.
+        PathMatcher::mc_MaxPathLength  // maxPathLength: Use PathMatcher temp value.
     };
 
     // Usage-printing helper function.

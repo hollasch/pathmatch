@@ -41,7 +41,6 @@
 #include <string>
 
 
-using namespace FileSystemProxy;
 namespace fs = std::filesystem;
 
 using std::wstring;
@@ -386,8 +385,7 @@ static bool isUpDir (const wchar_t *str)
     // PathMatcher Implementation
     // ============================
 
-PathMatcher::PathMatcher (FSProxy &fsProxy)
-  : m_fsProxy(fsProxy)
+PathMatcher::PathMatcher()
 {
     // PathMatcher Default Constructor
     size_t pathSize = mc_MaxPathLength + 1;    // Temporary Windows max path length.
