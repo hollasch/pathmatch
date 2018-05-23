@@ -89,16 +89,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ext\FileSystemProxy\fileSystemProxy.cpp" />
-    <ClCompile Include="..\..\ext\FileSystemProxy\fileSystemProxyWindows.cpp" />
     <ClCompile Include="..\..\src\pathmatch.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\..\src\pathmatchlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\..\src\pathmatcher\pathmatcher.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ext\FileSystemProxy\FileSystemProxy.h" />
-    <ClInclude Include="..\..\ext\FileSystemProxy\fileSystemProxyWindows.h" />
     <ClInclude Include="..\..\src\pathmatcher\pathmatcher.h" />
   </ItemGroup>
   <ItemGroup>
