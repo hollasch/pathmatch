@@ -1,7 +1,8 @@
 //==================================================================================================
-// pathmatch
+// pathmatch.cpp
 //
-//     This program returns all files and directories matching the specified pattern.
+// This program returns all files and directories matching the specified pattern. See the usage
+// string below for a description of its behavior.
 //
 // _________________________________________________________________________________________________
 // Copyright 2010 Steve Hollasch
@@ -40,7 +41,7 @@ using std::wstring;
 using std::wcout;
 using std::wcerr;
 
-static const wstring version = L"0.2.3-beta";
+static const wstring version = L"0.2.4-beta";
 
     // Usage Information
 
@@ -48,7 +49,8 @@ static const wstring usage_header {
     L"pathmatch  v" + version + L"  https://github.com/hollasch/pathmatch/"
 };
 
-static const wstring usage {
+static const wstring usage
+{
 //----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
 LR"(
 pathmatch: Report files and directories matching the specified pattern
@@ -79,16 +81,14 @@ Usage    : pathmatch [-s<slash>] [-f] [-v] <pattern> ... <pattern>
     -v
         Print version information.
 
-)"};
+)"
+};
 
-
-MatchTreeCallback mtCallback;    // Matching Entry Callback Routine
-
-    // The ReportOpts structure holds the entry options for use by the callback
-    // routine.
 
 struct ReportOpts
 {
+    // The ReportOpts structure holds the entry options for use by the callback routine.
+
     wchar_t slashChar;      // Forward or backward slash character to use
     bool    fullPath;       // If true, report full path rather than default relative
     bool    filesOnly;      // If true, report only files (not directories)
@@ -97,119 +97,19 @@ struct ReportOpts
 
 
 
-int wmain (int argc, wchar_t *argv[])
-{
-    //==========================================================================
-    // Main
-    //==========================================================================
-
-    PathMatcher matcher;  // PathMatcher Object
-
-    ReportOpts reportOpts {      // Options for callback routine
-        L'\\',                   // slashChar:     Default slashes are backward.
-        false,                   // fullPath:      Default to relative paths.
-        false,                   // filesOnly:     Default to report files and directories
-        PathMatcher::mc_MaxPathLength  // maxPathLength: Use PathMatcher temp value.
-    };
-
-    // Usage-printing helper function.
-    auto exitWithUsage = [] () {
-        wcout << usage_header << L'\n' << usage;
-        exit(0);
-    };
-
-    // Option character helper function. If the string is a command-line option, then it returns
-    // the option character, else 0.
-    auto optionChar = [] (const wchar_t* arg) {
-        return (arg[0] == L'-') ? arg[1] : 0;
-    };
-
-    if (argc <= 1)
-        exitWithUsage();
-
-    // Cycle through all command-line arguments.
-
-    for (int argi=1;  argi < argc;  ++argi)
-    {
-        auto arg = argv[argi];
-
-        // The argument "/?" is a special case. While it's technically a valid file system pattern,
-        // we treat it as a request for tool information by convention (if it's the first argument).
-
-        if (0 == (wcscmp(arg, L"/?")))
-            exitWithUsage();
-
-        switch (optionChar(arg))
-        {
-            case L'h': case L'H': case L'?':     // Help Info
-                exitWithUsage();
-
-            case L'a': case L'A':                // Absolute Path Option
-            {   reportOpts.fullPath = true;
-                break;
-            }
-
-            case L'f': case L'F':                // Report Files Only
-            {   reportOpts.filesOnly = true;
-                break;
-            }
-
-            case L's': case L'S':                // Slash Direction Option
-            {
-                auto slashChar = arg[2];
-
-                if (slashChar == 0) {
-                    ++argi;
-                    if (argi >= argc)
-                    {   wcerr << L"pathmatch: Expected slash type after '-s' option.\n";
-                        exit (1);
-                    }
-                    slashChar = *argv[argi];
-                }
-
-                if ((slashChar != L'/') && (slashChar != L'\\'))
-                {   wcerr << L"pathmatch: Invalid '-s' option (\"" << slashChar << L"\").\n";
-                    exit (1);
-                }
-
-                reportOpts.slashChar = slashChar;
-                break;
-            }
-
-            case L'v': case L'V':                // Version Query
-            {   wcout << version << L'\n';
-                exit(0);
-            }
-
-            default:
-            {
-                matcher.Match (arg, &mtCallback, &reportOpts);
-                break;
-            }
-        }
-    }
-
-    return 0;
-}
-
-
-
-static inline bool isSlash (wchar_t c)
-{
-    // Return true if the given character is a fore or back slash.
+static inline bool isSlash (wchar_t c) {
+    // Return true if the given character is a forward or backward slash.
     return (c == L'/') || (c == L'\\');
 }
 
 
-
+//--------------------------------------------------------------------------------------------------
 bool mtCallback (
     const fs::path& path,
     const fs::directory_entry& dirEntry,
     void* cbdata)
 {
-    //==========================================================================
-    // mtcallback
-    //     This is the callback function for the PathMatcher object.
+    // This is the callback function for the PathMatcher object.
     //
     // Parameters
     //     path ........ The full path of the matching file or directory
@@ -219,7 +119,7 @@ bool mtCallback (
     // Returns
     //     True to continue fetching matching entries, unless the routine
     //     encountered and error attempting to convert a path to a full path.
-    //==========================================================================
+    //--------
 
     // Get the properly typed report options structure from the callback data.
 
@@ -269,4 +169,96 @@ bool mtCallback (
     #endif
 
     return true;   // Continue enumeration.
+}
+
+
+//--------------------------------------------------------------------------------------------------
+int wmain (int argc, wchar_t *argv[])
+{
+    PathMatcher matcher;  // PathMatcher Object
+
+    ReportOpts reportOpts {      // Options for callback routine
+        L'\\',                   // slashChar:     Default slashes are backward.
+        false,                   // fullPath:      Default to relative paths.
+        false,                   // filesOnly:     Default to report files and directories
+        PathMatcher::mc_MaxPathLength  // maxPathLength: Use PathMatcher temp value.
+    };
+
+    // Usage-printing helper function.
+    auto exitWithUsage = [] () {
+        wcout << usage_header << L'\n' << usage;
+        exit(0);
+    };
+
+    // Option character helper function. If the string is a command-line option, then it returns
+    // the option character, else 0.
+    auto optionChar = [] (const wchar_t* arg) {
+        return (arg[0] == L'-') ? arg[1] : 0;
+    };
+
+    if (argc <= 1)
+        exitWithUsage();
+
+    // Cycle through all command-line arguments.
+
+    for (int argi=1;  argi < argc;  ++argi) {
+
+        auto arg = argv[argi];
+
+        // The argument "/?" is a special case. While it's technically a valid file system pattern,
+        // we treat it as a request for tool information by convention (if it's the first argument).
+
+        if (0 == (wcscmp(arg, L"/?")))
+            exitWithUsage();
+
+        switch (optionChar(arg)) {
+
+            case L'h': case L'H': case L'?':     // Help Info
+                exitWithUsage();
+
+            case L'a': case L'A': {              // Absolute Path Option
+                reportOpts.fullPath = true;
+                break;
+            }
+
+            case L'f': case L'F': {              // Report Files Only
+                reportOpts.filesOnly = true;
+                break;
+            }
+
+            case L's': case L'S': {              // Slash Direction Option
+             
+                auto slashChar = arg[2];
+
+                if (slashChar == 0) {
+                    ++argi;
+                    if (argi >= argc) {
+                        wcerr << L"pathmatch: Expected slash type after '-s' option.\n";
+                        exit (1);
+                    }
+                    slashChar = *argv[argi];
+                }
+
+                if ((slashChar != L'/') && (slashChar != L'\\')) {
+                    wcerr << L"pathmatch: Invalid '-s' option (\"" << slashChar << L"\").\n";
+                    exit (1);
+                }
+
+                reportOpts.slashChar = slashChar;
+                break;
+            }
+
+            case L'v': case L'V': {              // Version Query
+                wcout << version << L'\n';
+                exit(0);
+            }
+
+            default: {
+                matcher.Match (arg, &mtCallback, &reportOpts);
+                break;
+            }
+        }
+    }
+
+    return 0;
 }

@@ -1,4 +1,6 @@
 //==================================================================================================
+// pathmatcher.h
+//
 // Declarations and definitions for the PathMatcher object. This object uses path match patterns
 // (including the special operators '?', '*', and '...' to locate and report matching directory
 // entries in a subdirectory tree.
@@ -41,7 +43,8 @@
 
 
 
-namespace PathMatch {
+namespace PathMatch
+{
 
     // Standalone Function Declarations
 
