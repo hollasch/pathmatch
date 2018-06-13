@@ -254,7 +254,7 @@ int wmain (int argc, wchar_t *argv[])
             }
 
             default: {
-                matcher.Match (arg, &mtCallback, &reportOpts);
+                matcher.Match (wstring(arg), &mtCallback, &reportOpts);
                 break;
             }
         }

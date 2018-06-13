@@ -331,9 +331,9 @@ static bool isDotsDir (const wchar_t *str) {
     return (str[0] == L'.') && (!str[1] || ((str[1] == L'.') && !str[2]));
 }
 
-static bool isUpDir (const wchar_t *str) {
+static bool isUpDir (const wstring::const_iterator strIt) {
     // Return true if string begins with parent ("..") subpath.
-    return (str[0]==L'.') && (str[1]==L'.') && (!str[2] || isSlash(str[2]));
+    return (strIt[0] == L'.' && strIt[1] == L'.' && (!strIt[2] || isSlash(strIt[2])));
 }
 
 size_t PathMatcher::PathSpaceLeft (const wchar_t *pathend) const
@@ -421,7 +421,7 @@ bool PathMatcher::AllocPatternBuff (size_t requestedSize)
 
 
 //--------------------------------------------------------------------------------------------------
-bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
+bool PathMatcher::CopyGroomedPattern (const wstring pattern)
 {
     // This routine copies the given pattern into the m_pattern member field. While doing so, it
     // collapses sequences of repeating slashes, eliminates "/./" subpaths, resolves parent subpaths
@@ -434,10 +434,10 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
     // Allocate the buffer needed to store the pattern.
 
-    if (!AllocPatternBuff (wcslen(pattern) + 1))
+    if (!AllocPatternBuff (pattern.length() + 1))
         return false;
 
-    auto src  = pattern;
+    auto src  = pattern.cbegin();
     auto dest = m_pattern;
     auto pastAnyLeadingSlashes = false;
 
@@ -449,7 +449,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
     // Now copy the remainder of the path. Eliminate "." subpaths, reduce repeating slashes to
     // single slashes, and resolve ".." portions.
 
-    while (*src) {
+    while (src != pattern.cend()) {
 
         pastAnyLeadingSlashes = true;
 
@@ -527,7 +527,9 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
                 // If the parent directory is already a "../", then just append the current up
                 // directory to the last one.
 
-                if (isUpDir(parent))
+                auto parentStr = wstring(parent);
+
+                if (isUpDir(parentStr.cbegin()))
                     parent = nullptr;
             }
 
@@ -543,7 +545,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
             // If no special cases, then just copy up till the next slash or end of pattern.
 
-            while (*src && !isSlash(*src))
+            while (src != pattern.cend() && !isSlash(*src))
                 *dest++ = *src++;
         }
     }
@@ -559,7 +561,7 @@ bool PathMatcher::CopyGroomedPattern (const wchar_t *pattern)
 
 //--------------------------------------------------------------------------------------------------
 bool PathMatcher::Match (
-    const wchar_t*     path_pattern,
+    const wstring      path_pattern,
     MatchTreeCallback* callback_func,
     void*              userdata)
 {

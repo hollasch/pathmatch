@@ -79,7 +79,7 @@ class PathMatcher
 
     // The main match procedure.
 
-    bool Match (const wchar_t *pattern, MatchTreeCallback* callback, void* userData);
+    bool Match (const std::wstring pattern, MatchTreeCallback* callback, void* userData);
 
     // Temporarily define a maximum path length. This is the Windows max path length, but it appears
     // that std::filesystem has no maximum path length (or it's not exposed).
@@ -103,7 +103,7 @@ class PathMatcher
 
     bool AllocPatternBuff (size_t requestedSize);
 
-    bool CopyGroomedPattern (const wchar_t *pattern);
+    bool CopyGroomedPattern (const std::wstring pattern);
 
     void HandleEllipsisSubpath (wchar_t *pathEnd, const wchar_t *pattern, int iPattern);
 
