@@ -49,12 +49,9 @@ static const wstring usage_header {
     L"pathmatch  v" + version + L"  https://github.com/hollasch/pathmatch/"
 };
 
-static const wstring usage
-{
-//----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
-LR"(
-pathmatch: Report files and directories matching the specified pattern
-Usage    : pathmatch [-s<slash>] [-f] [-v] <pattern> ... <pattern>
+static const wstring usage =
+LR"(pathmatch: Report files and directories matching the specified pattern
+Usage: pathmatch [<options>] <pattern> ... <pattern>
 
     `pathmatch` finds and reports all files and directories matching wildcard
     patterns. These patterns may contain the special characters '?', '*', and
@@ -66,9 +63,9 @@ Usage    : pathmatch [-s<slash>] [-f] [-v] <pattern> ... <pattern>
 
     The following command options are supported:
 
-    -s<slash>
-        Specifies the slash direction to be reported. By default, slashes will
-        be back slashes. Use "-s/" to report paths with forward slashes.
+Command Options:
+    /?, -h, -?
+        Print help information.
 
     -a
         Report absolute paths. By default, reported paths are relative to the
@@ -78,10 +75,55 @@ Usage    : pathmatch [-s<slash>] [-f] [-v] <pattern> ... <pattern>
         Report files only (no directories). To report directories only, append
         a slash to the pattern.
 
+    -s<slash>
+        Specifies the slash direction to be reported. By default, slashes will
+        be back slashes. Use "-s/" to report paths with forward slashes.
+
     -v
         Print version information.
 
-)"
+Future Options:
+    --absolute
+        Equivalent to the -a option.
+
+    --debug, -d
+        Turn on debugging output.
+
+    --dirSlash
+        Print matching directories with a trailing slash.
+    
+    --files
+        Equivalent to the -f option.
+
+    --stream <fileName>|--
+        Apply patterns against input stream of filenames. The special filename
+        '--' reads filenames from standard input. '--' may be specified for a
+        single option only.
+    
+    --ignore <fileName>|--
+        Suppress output of files and directories that match rules inside a file
+        of patterns. '--' may be specified for a single option only.
+
+    --help
+        Equivalent to the -h option.
+
+    --slash<slash>
+        Equivalent to the -s option.
+    
+    --version
+        Equivalent to the -v option.
+)";
+
+enum class OptionType {
+    AbsolutePath,
+    Debug,
+    DirectorySlash,
+    FilesOnly,
+    Help,
+    Ignore,
+    SlashType,
+    Stream,
+    PrintVersion
 };
 
 
