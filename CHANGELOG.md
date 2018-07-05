@@ -1,10 +1,13 @@
 Change Log -- `pathmatch`
 ================================================================================
 
-0.2.0  (In Progress)
+0.2.0-alpha5  (In Progress)
 --------------------------------------------------------------------------------
 ### New
   - Expanded usage information. Now includes future options under development.
+  - New support for `--word` option style.
+  - Stubbed in support for new options: `--debug`, `--dirSlash`, `--stream`, and
+    `--ignore`.
 
 ### Changed
   - Changed to MIT license
