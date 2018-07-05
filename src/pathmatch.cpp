@@ -37,11 +37,12 @@
 using namespace PathMatch;
 namespace fs = std::filesystem;
 
+using std::vector;
 using std::wstring;
 using std::wcout;
 using std::wcerr;
 
-static const wstring version = L"0.2.4-beta";
+static const wstring version = L"0.2.0-alpha5";
 
     // Usage Information
 
@@ -64,84 +65,268 @@ Usage: pathmatch [<options>] <pattern> ... <pattern>
     The following command options are supported:
 
 Command Options:
-    /?, -h, -?
-        Print help information.
-
-    -a
+    --absolute, -a
         Report absolute paths. By default, reported paths are relative to the
         current working directory.
 
-    -f
+    --files, -f
         Report files only (no directories). To report directories only, append
         a slash to the pattern.
 
-    -s<slash>
-        Specifies the slash direction to be reported. By default, slashes will
-        be back slashes. Use "-s/" to report paths with forward slashes.
+    --help, /?, -?, -h
+        Print help information.
 
-    -v
+    --slash [/|\], -s[/|\]
+        Specifies the slash direction to be reported. By default, slashes will
+        be back slashes. Use "-s/" to report paths with forward slashes, "-s\"
+        to report backslashes. A space is allowed before the slash.
+
+    --version, -v
         Print version information.
 
 Future Options:
-    --absolute
-        Equivalent to the -a option.
-
-    --debug, -d
+    --debug, -D
         Turn on debugging output.
 
-    --dirSlash
+    --dirSlash, -d
         Print matching directories with a trailing slash.
-    
-    --files
-        Equivalent to the -f option.
 
-    --stream <fileName>|--
+    --stream <fileName>|( <file1> <file2> ... <fileN> )
         Apply patterns against input stream of filenames. The special filename
-        '--' reads filenames from standard input. '--' may be specified for a
-        single option only.
-    
-    --ignore <fileName>|--
+        '--' reads filenames from standard input, and may be specified for a
+        single option only. The multiple file option requires space-separated
+        '(' and ')' delimiters.
+
+    --ignore <fileName>|( <file1> <file2> ... <fileN> )
         Suppress output of files and directories that match rules inside a file
-        of patterns. '--' may be specified for a single option only.
-
-    --help
-        Equivalent to the -h option.
-
-    --slash<slash>
-        Equivalent to the -s option.
-    
-    --version
-        Equivalent to the -v option.
+        of patterns. The special filename '--' reads from standard input, and
+        may be specified for a single option only. The multiple file option
+        requires space-separated '(' and ')' delimiters
 )";
 
-enum class OptionType {
-    AbsolutePath,
-    Debug,
-    DirectorySlash,
-    FilesOnly,
-    Help,
-    Ignore,
-    SlashType,
-    Stream,
-    PrintVersion
-};
-
-
-struct ReportOpts
+struct CommandParameters
 {
-    // The ReportOpts structure holds the entry options for use by the callback routine.
+    // The CommandParameters structure holds the options for use by the callback routine.
 
-    wchar_t slashChar;      // Forward or backward slash character to use
-    bool    fullPath;       // If true, report full path rather than default relative
-    bool    filesOnly;      // If true, report only files (not directories)
-    size_t  maxPathLength;  // Maximum path length
+    bool printHelp {false};        // Print help and exit.
+    bool printVersion {false};     // Print version information and exit.
+
+    bool debug {false};            // Print debug information
+
+    bool    dirSlash {false};      // Print directories with trailing slashes
+    wchar_t slashChar {L'/'};      // Forward or backward slash character to use
+    bool    absolute {false};      // If true, report absolute path rather than default relative
+    bool    filesOnly {false};     // If true, report only files (not directories)
+    size_t  maxPathLength {0};     // Maximum path length
+
+    vector<wstring> streamSources; // Source of file paths to match
+    vector<wstring> ignoreFiles;   // Files with patterns to ignore
+    vector<wstring> patterns;      // Patterns to match
 };
 
 
+//--------------------------------------------------------------------------------------------------
+// Helper Functions
+//--------------------------------------------------------------------------------------------------
 
-static inline bool isSlash (wchar_t c) {
+inline bool isSlash (wchar_t c) {
     // Return true if the given character is a forward or backward slash.
     return (c == L'/') || (c == L'\\');
+}
+
+inline bool equal (const wchar_t* a, const wchar_t* b) {
+    // Return true if the two wchar_t strings are identical.
+    return 0 == _wcsicmp(a, b);
+}
+
+
+//--------------------------------------------------------------------------------------------------
+bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[])
+{
+    // Parse arguments from the command line and set the given CommandParameters structure with the
+    // resulting values. This function returns true if no errors were encountered, otherwise false.
+
+    if (argc <= 1) {
+        commandParams.printHelp = true;
+        return true;
+    }
+
+    // Cycle through all command-line arguments.
+
+    for (size_t argi=1;  argi < argc;  ++argi) {
+
+        auto arg = argv[argi];
+
+        // The argument "/?" is a special case. While it's technically a valid file system pattern,
+        // we treat it as a request for tool information by convention (if it's the first argument).
+
+        if (equal(arg, L"/?")) {
+            commandParams.printHelp = true;
+            return true;
+        }
+
+        if (arg[0] != L'-') {
+
+            commandParams.patterns.push_back (argv[argi]);
+
+            // Patterns
+
+        } else {
+
+            if (arg[1] != L'-') {
+
+                // Single letter command options
+
+                switch (arg[1]) {
+                    case L'h': case L'H': case L'?': {
+                        commandParams.printHelp = true;
+                        return true;
+                    }
+
+                    case L'a': { commandParams.absolute = true;     break; }
+                    case L'd': { commandParams.dirSlash = true;     break; }
+                    case L'D': { commandParams.debug = true;        break; }
+                    case L'f': { commandParams.filesOnly = true;    break; }
+                    case L'v': { commandParams.printVersion = true; return true; }
+
+                    case L's': { // Slash type option
+                        auto slashString = arg+2;
+                        if (!slashString[0]) {
+                            if (++argi >= argc) {
+                                wcerr << L"pathmatch: Expected slash character after '-s' option.\n";
+                                return false;
+                            }
+                            slashString = argv[argi];
+                        }
+
+                        if (slashString[1] != 0) {
+                            wcerr << L"pathmatch: Expected single character for -s option, got '"
+                                  << slashString << L"'.\n";
+                            return false;
+                        }
+
+                        auto slashChar = slashString[0];
+                        if ((slashChar != L'/') && (slashChar != L'\\')) {
+                            wcerr << L"pathmatch: Invalid '-s' option (\"" << slashChar << L"\").\n";
+                            return false;
+                        }
+
+                        commandParams.slashChar = slashChar;
+                        break;
+                    }
+                }
+
+            } else {
+
+                auto optionWord = argv[argi] + 2;
+
+                // Double dash word options
+                if (equal(optionWord, L"absolute")) {
+                    commandParams.absolute = true;
+
+                } else if (equal(optionWord, L"debug")) {
+                    commandParams.debug = true;
+
+                } else if (equal(optionWord, L"dirSlash")) {
+                    commandParams.dirSlash = true;
+
+                } else if (equal(optionWord, L"files")) {
+                    commandParams.filesOnly = true;
+
+                } else if (equal(optionWord, L"stream")) {
+                    ++argi;
+                    if (!equal(argv[argi], L"(")) {
+                        commandParams.streamSources.push_back(argv[argi]);
+                    } else {
+                        for (++argi;  argi < argc && !equal(argv[argi],L")");  ++argi) {
+                            commandParams.streamSources.push_back(argv[argi]);
+                        }
+                    }
+
+                } else if (equal(optionWord, L"ignore")) {
+                    ++argi;
+                    if (!equal(argv[argi], L"(")) {
+                        commandParams.ignoreFiles.push_back(argv[argi]);
+                    } else {
+                        for (++argi;  argi < argc && !equal(argv[argi],L")");  ++argi) {
+                            commandParams.ignoreFiles.push_back(argv[argi]);
+                        }
+                    }
+
+                } else if (equal(optionWord, L"help")) {
+                    commandParams.printHelp = true;
+                    return true;
+
+                } else if (equal(optionWord, L"slash")) {
+                    ++argi;
+                    if (wcslen(argv[argi]) > 1) {
+                        wcerr << L"pathmatch: Expected single character for slash option, got '"
+                              << argv[argi] << L"'.\n";
+                        return false;
+                    }
+                    auto slashChar = argv[argi][0];
+                    if (slashChar != L'\\' && slashChar != '/') {
+                        wcerr << L"pathmatch: Expected slash character after '--slashChar' option, got '"
+                              << slashChar << L".\n";
+                        return false;
+                    }
+                    commandParams.slashChar = argv[argi][0];
+
+                } else if (equal(optionWord, L"version")) {
+                    commandParams.printVersion = true;
+                    return true;
+
+                } else {
+                    wcerr << L"pathmatch: Unrecognized option (--" << optionWord << L").\n";
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+void printWordList (const vector<wstring> wordList)
+{
+    if (wordList.empty()) {
+        wcout << "<empty>";
+        return;
+    }
+
+    bool firstItem = true;
+
+    for (auto v: wordList) {
+        if (firstItem) {
+            firstItem = false;
+        } else {
+            wcout << L", ";
+        }
+        wcout << v;
+    }
+}
+
+
+//--------------------------------------------------------------------------------------------------
+void printParameters (const CommandParameters& params)
+{
+    auto boolValue = [](bool b) { return b ? L"true\n" : L"false\n"; };
+
+    wcout << L"Command Parameters:\n";
+    wcout << L"       printHelp: " << boolValue(params.printHelp);
+    wcout << L"    printVersion: " << boolValue(params.printVersion);
+    wcout << L"           debug: " << boolValue(params.debug);
+    wcout << L"        dirSlash: " << boolValue(params.dirSlash);
+    wcout << L"        absolute: " << boolValue(params.absolute);
+    wcout << L"       filesOnly: " << boolValue(params.filesOnly);
+    wcout << L"       slashChar: " << params.slashChar << L'\n';
+    wcout << L"   maxPathLength: " << params.maxPathLength << L'\n';
+    wcout << L"     ignoreFiles: "; printWordList(params.ignoreFiles); wcout << L'\n';
+    wcout << L"   streamSources: "; printWordList(params.streamSources); wcout << L'\n';
+    wcout << L"        patterns: "; printWordList(params.patterns); wcout << L'\n';
+    wcout << L'\n';
 }
 
 
@@ -165,32 +350,31 @@ bool mtCallback (
 
     // Get the properly typed report options structure from the callback data.
 
-    auto reportOpts = static_cast<const ReportOpts*>(cbdata);
+    auto commandParams = static_cast<const CommandParameters*>(cbdata);
 
-    auto fullPath = new wchar_t [reportOpts->maxPathLength + 1];  // Optional Full Path
+    auto absolute = new wchar_t [commandParams->maxPathLength + 1];  // Optional Full Path
     auto item = path;       // Pointer to Matching Entry
 
     // If we are to report only files and this entry is a directory, then return without reporting.
 
     auto isDirectory = fs::is_directory(path);
-    if (reportOpts->filesOnly && isDirectory)
+    if (commandParams->filesOnly && isDirectory)
         return true;
 
-    // TODO: Handle absolute and relative paths (reportOpts->fullPath).
+    // TODO: Handle absolute and relative paths (reportOpts->absolute).
     // TODO: Handle desired slash character (reportOpts->slashChar).
 
     wcout << path.wstring() << '\n';
 
     #if 0
-    if (!reportOpts->fullPath)
+    if (!commandParams->absolute)
         item = path;
     else
-    {
-        // If we are to convert the default relative path to a full path, use the stdlib _fullpath
+    { // If we are to convert the default relative path to a full path, use the stdlib _fullpath
         // function to do so. If this is not possible, then emit an error message and halt matching
         // entry enumeration.
 
-        if (!_wfullpath(fullPath, entry, reportOpts->maxPathLength))
+        if (!_wfullpath(absolute, entry, commandParams->maxPathLength))
         {
             wcerr << L"pathmatch: Unable to convert \""
                   << entry
@@ -198,14 +382,14 @@ bool mtCallback (
             return false;
         }
 
-        item = fs::path(fullPath);
+        item = fs::path(absolute);
     }
 
     // Print out the matching item, converted to the requested slash type.
 
     for (const wchar_t *ptr = item;  *ptr;  ++ptr)
     for (auto wchar_t : item
-        wcout << (isSlash(*ptr) ? reportOpts->slashChar : *ptr);
+        wcout << (isSlash(*ptr) ? commandParams->slashChar : *ptr);
 
     wcout << L'\n';
     #endif
@@ -219,88 +403,28 @@ int wmain (int argc, wchar_t *argv[])
 {
     PathMatcher matcher;  // PathMatcher Object
 
-    ReportOpts reportOpts {      // Options for callback routine
-        L'\\',                   // slashChar:     Default slashes are backward.
-        false,                   // fullPath:      Default to relative paths.
-        false,                   // filesOnly:     Default to report files and directories
-        PathMatcher::mc_MaxPathLength  // maxPathLength: Use PathMatcher temp value.
-    };
+    CommandParameters commandParams;
 
-    // Usage-printing helper function.
-    auto exitWithUsage = [] () {
-        wcout << usage_header << L'\n' << usage;
-        exit(0);
-    };
+    if (!parseArguments(commandParams, argc, argv))
+        exit(1);
 
-    // Option character helper function. If the string is a command-line option, then it returns
-    // the option character, else 0.
-    auto optionChar = [] (const wchar_t* arg) {
-        return (arg[0] == L'-') ? arg[1] : 0;
-    };
-
-    if (argc <= 1)
-        exitWithUsage();
-
-    // Cycle through all command-line arguments.
-
-    for (int argi=1;  argi < argc;  ++argi) {
-
-        auto arg = argv[argi];
-
-        // The argument "/?" is a special case. While it's technically a valid file system pattern,
-        // we treat it as a request for tool information by convention (if it's the first argument).
-
-        if (0 == (wcscmp(arg, L"/?")))
-            exitWithUsage();
-
-        switch (optionChar(arg)) {
-
-            case L'h': case L'H': case L'?':     // Help Info
-                exitWithUsage();
-
-            case L'a': case L'A': {              // Absolute Path Option
-                reportOpts.fullPath = true;
-                break;
-            }
-
-            case L'f': case L'F': {              // Report Files Only
-                reportOpts.filesOnly = true;
-                break;
-            }
-
-            case L's': case L'S': {              // Slash Direction Option
-             
-                auto slashChar = arg[2];
-
-                if (slashChar == 0) {
-                    ++argi;
-                    if (argi >= argc) {
-                        wcerr << L"pathmatch: Expected slash type after '-s' option.\n";
-                        exit (1);
-                    }
-                    slashChar = *argv[argi];
-                }
-
-                if ((slashChar != L'/') && (slashChar != L'\\')) {
-                    wcerr << L"pathmatch: Invalid '-s' option (\"" << slashChar << L"\").\n";
-                    exit (1);
-                }
-
-                reportOpts.slashChar = slashChar;
-                break;
-            }
-
-            case L'v': case L'V': {              // Version Query
-                wcout << version << L'\n';
-                exit(0);
-            }
-
-            default: {
-                matcher.Match (wstring(arg), &mtCallback, &reportOpts);
-                break;
-            }
-        }
+    if (commandParams.debug) {
+        printParameters(commandParams);
     }
 
-    return 0;
+    if (commandParams.printHelp) {
+        wcout << usage_header << L'\n' << usage;
+        exit(0);
+    }
+
+    if (commandParams.printVersion) {
+        wcout << usage_header << L'\n';
+        exit(0);
+    }
+
+    for (auto pattern: commandParams.patterns) {
+        matcher.Match (pattern, &mtCallback, &commandParams);
+    }
+
+    exit (0);
 }
