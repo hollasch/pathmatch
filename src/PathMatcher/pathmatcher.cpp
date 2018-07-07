@@ -336,7 +336,7 @@ static bool isUpDir (const wstring::const_iterator strIt) {
     return (strIt[0] == L'.' && strIt[1] == L'.' && (!strIt[2] || isSlash(strIt[2])));
 }
 
-size_t PathMatcher::PathSpaceLeft (const wchar_t *pathend) const
+size_t PathMatcher::pathSpaceLeft (const wchar_t *pathend) const
 {
     // Returns the number of characters that can be appended to the m_path
     // string, while allowing room for a terminating character.
@@ -363,7 +363,7 @@ PathMatcher::~PathMatcher ()
 
 
 //--------------------------------------------------------------------------------------------------
-wchar_t* PathMatcher::AppendPath (wchar_t *pathend, const wchar_t *str)
+wchar_t* PathMatcher::appendPath (wchar_t *pathend, const wchar_t *str)
 {
     // This procedure appends the current path with the specified string.
     //
@@ -378,7 +378,7 @@ wchar_t* PathMatcher::AppendPath (wchar_t *pathend, const wchar_t *str)
 
     // Return null if there's not enough space to append the string.
 
-    if (PathSpaceLeft(pathend) < (strlength + 1))
+    if (pathSpaceLeft(pathend) < (strlength + 1))
         return nullptr;
 
     while (*str)
@@ -391,7 +391,7 @@ wchar_t* PathMatcher::AppendPath (wchar_t *pathend, const wchar_t *str)
 
 
 //--------------------------------------------------------------------------------------------------
-bool PathMatcher::AllocPatternBuff (size_t requestedSize)
+bool PathMatcher::allocPatternBuff (size_t requestedSize)
 {
     // This function allocates, if necessary, the memory for the pattern buffer. If the size
     // requested is already accomodated by the pattern buffer, no action is taken.
@@ -421,7 +421,7 @@ bool PathMatcher::AllocPatternBuff (size_t requestedSize)
 
 
 //--------------------------------------------------------------------------------------------------
-bool PathMatcher::CopyGroomedPattern (const wstring pattern)
+bool PathMatcher::groomPattern (const wstring pattern)
 {
     // This routine copies the given pattern into the m_pattern member field. While doing so, it
     // collapses sequences of repeating slashes, eliminates "/./" subpaths, resolves parent subpaths
@@ -434,7 +434,7 @@ bool PathMatcher::CopyGroomedPattern (const wstring pattern)
 
     // Allocate the buffer needed to store the pattern.
 
-    if (!AllocPatternBuff (pattern.length() + 1))
+    if (!allocPatternBuff (pattern.length() + 1))
         return false;
 
     auto src  = pattern.cbegin();
@@ -560,10 +560,10 @@ bool PathMatcher::CopyGroomedPattern (const wstring pattern)
 
 
 //--------------------------------------------------------------------------------------------------
-bool PathMatcher::Match (
-    const wstring      path_pattern,
-    MatchTreeCallback* callback_func,
-    void*              userdata)
+bool PathMatcher::match (
+    const wstring  path_pattern,
+    MatchCallback* callback_func,
+    void*          userdata)
 {
     // This function walks a directory tree according to the given wildcard pattern, and calls the
     // specified callback function for each matching entry.
@@ -585,7 +585,7 @@ bool PathMatcher::Match (
     // Copy the groomed pattern (see comments for CopyGroomedPattern) into the appropriate member
     // fields.
 
-    if (!CopyGroomedPattern(path_pattern))
+    if (!groomPattern(path_pattern))
         return false;
 
     // We will divide the path_pattern up into two parts: the root path, and the remaining pattern.
@@ -625,14 +625,14 @@ bool PathMatcher::Match (
             return false;
     }
 
-    MatchDir (m_path + rootlen, wildstart);
+    matchDir (m_path + rootlen, wildstart);
 
     return true;
 }
 
 
 //--------------------------------------------------------------------------------------------------
-void PathMatcher::MatchDir (
+void PathMatcher::matchDir (
     wchar_t*       pathend,
     const wchar_t* pattern)
 {
@@ -668,7 +668,7 @@ void PathMatcher::MatchDir (
     // pattern and return.
 
     if (isEllipsis(pattern + ipatt) || isDoubleAsterisk(pattern + ipatt)) {
-        HandleEllipsisSubpath (pathend, pattern, ipatt);
+        handleEllipsisSubpath (pathend, pattern, ipatt);
         return;
     }
 
@@ -696,7 +696,7 @@ void PathMatcher::MatchDir (
     errno_t retval { S_OK };    // General Return Value
 
     if (fliteral)
-        retval = wcsncpy_s (pathend, PathSpaceLeft(pathend), pattern, ipatt);
+        retval = wcsncpy_s (pathend, pathSpaceLeft(pathend), pattern, ipatt);
 
     // If there's a wildcard subdirectory or file name, then enumerate all directory entries and
     // filter the results.
@@ -729,18 +729,18 @@ void PathMatcher::MatchDir (
         if ((m_dirsOnly || fdirmatch) && !isDirectory) {
             // Do nothing.
         } else if (fdescend) {
-            auto pathend_new = AppendPath (pathend, entryName.c_str());
+            auto pathend_new = appendPath (pathend, entryName.c_str());
 
             if (!pathend_new) continue;
 
             *pathend_new++ = c_slash;
             *pathend_new   = 0;
 
-            MatchDir (pathend_new, pattern + ipatt + 1);
+            matchDir (pathend_new, pattern + ipatt + 1);
         } else {
             // Construct full relative entry path.
 
-            if (AppendPath(pathend, entryName.c_str())) {
+            if (appendPath(pathend, entryName.c_str())) {
                 if (!m_callback (fsPath / entryName, dirEntry, m_callbackData))
                     break;
             }
@@ -753,7 +753,7 @@ void PathMatcher::MatchDir (
 
 
 //--------------------------------------------------------------------------------------------------
-void PathMatcher::HandleEllipsisSubpath (
+void PathMatcher::handleEllipsisSubpath (
     wchar_t       *pathend,    // One past the last character
     const wchar_t *pattern,    // Pointer to the beginning of the current subdir of the full pattern
     int            ipatt)      // Offset from the pattern to the beginning of the ellipsis
@@ -793,13 +793,13 @@ void PathMatcher::HandleEllipsisSubpath (
 
     // TODO: lowercase ellipsis_prefix here.
 
-    FetchAll (pathend, ellipsis_prefix);
+    fetchAll (pathend, ellipsis_prefix);
     return;
 }
 
 
 //--------------------------------------------------------------------------------------------------
-void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
+void PathMatcher::fetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
 {
     // This procedure is called when an ellipsis is encountered, and recursively fetches all tree
     // entries and optionally matches against a pattern.
@@ -817,13 +817,13 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
     // Append slash if needed.
 
     if ((pathend > m_path) && !isSlash(pathend[-1])) {
-        pathend = AppendPath (pathend, c_slashstr);
+        pathend = appendPath (pathend, c_slashstr);
         if (!pathend) return;          // Bail out if the append failed.
     }
 
     // Bail out if we've run out of path length.
 
-    if (PathSpaceLeft(pathend) < 1) return;
+    if (pathSpaceLeft(pathend) < 1) return;
 
     auto fsPath = fs::path(m_path);
 
@@ -845,7 +845,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
         if (ellipsis_prefix && !wildComp (ellipsis_prefix, entryName))
             continue;
 
-        auto pathEndNew = AppendPath (pathend, entryName.c_str());
+        auto pathEndNew = appendPath (pathend, entryName.c_str());
 
         if (!pathEndNew) break;
 
@@ -855,7 +855,7 @@ void PathMatcher::FetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
         }
 
         if (isDirectory)
-            FetchAll (pathEndNew, nullptr);
+            fetchAll (pathEndNew, nullptr);
     }
 }
 

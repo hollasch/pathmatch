@@ -423,7 +423,7 @@ int wmain (int argc, wchar_t *argv[])
     }
 
     for (auto pattern: commandParams.patterns) {
-        matcher.Match (pattern, &mtCallback, &commandParams);
+        matcher.match (pattern, &mtCallback, &commandParams);
     }
 
     exit (0);

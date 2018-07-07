@@ -1,3 +1,4 @@
+#ifndef _INCLUDED_PATHMATCHER_H
 //==================================================================================================
 // pathmatcher.h
 //
@@ -28,58 +29,50 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //==================================================================================================
+#define _INCLUDED_PATHMATCHER_H
 
-#ifndef _pathmatcher_h
-#define _pathmatcher_h
-
-    // Includes
-
-#include <io.h>
-#include <stdlib.h>
-#include <windows.h>
 
 #include <filesystem>
 #include <string>
 
 
-
 namespace PathMatch
 {
 
-    // Standalone Function Declarations
+// Standalone Function Declarations
 
 // Wildcard comparison test, case sensitive.
 bool wildComp (const std::wstring& pattern, const std::wstring& str);
-bool wildComp (std::wstring::const_iterator patternIt, std::wstring::const_iterator patternEnd,
-               std::wstring::const_iterator strIt,     std::wstring::const_iterator strEnd);
+bool wildComp (std::wstring::const_iterator patternStart, std::wstring::const_iterator patternEnd,
+               std::wstring::const_iterator strStart,     std::wstring::const_iterator strEnd);
 
-// Path matching test, with ellipses (directory-spanning path portion), asterisk (substring of
-// directory or file name), and question mark (matches any single character).
+// Path matching test, with ellipses or double asterisk (directory-spanning path portion), asterisk
+// (substring of directory or file name), and question mark (matches any single character).
 bool pathMatch (const wchar_t *pattern, const wchar_t *path);
 
-// The callback function signature that PathMatcher uses to report back all matching entries.
-using MatchTreeCallback = bool (
-    const std::filesystem::path& path,
-    const std::filesystem::directory_entry& dirEntry,
-    void* userData);
 
 
 class PathMatcher
 {
-    //--------------------------------------------------------------------------
-    // The PathMatcher object locates and reports all entries in a directory
-    // tree that match a given pattern, which may contain the special operators
-    // '?', '*', and '...'.
-    //--------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
+    // The PathMatcher class traverses the file system and reports all entries in a directory tree
+    // tree that match a specified pattern. This pattern may contain the special match operators
+    // '?', '*', '**', and '...'.
+    //---------------------------------------------------------------------------------------------
 
   public:
 
     PathMatcher();
     ~PathMatcher();
 
-    // The main match procedure.
+    // The callback function signature that PathMatcher uses to report back all matching entries.
+    using MatchCallback = bool (
+        const std::filesystem::path& path,
+        const std::filesystem::directory_entry& dirEntry,
+        void* userData);
 
-    bool Match (const std::wstring pattern, MatchTreeCallback* callback, void* userData);
+    // The main match procedure.
+    bool match (const std::wstring pattern, MatchCallback* callback, void* userData);
 
     // Temporarily define a maximum path length. This is the Windows max path length, but it appears
     // that std::filesystem has no maximum path length (or it's not exposed).
@@ -87,13 +80,13 @@ class PathMatcher
 
   private:   // Private Member Variables
 
-    MatchTreeCallback* m_callback { nullptr };     // Match Callback Function
-    void*              m_callbackData { nullptr }; // Callback Function Data
+    MatchCallback* m_callback { nullptr };     // Match Callback Function
+    void*          m_callbackData { nullptr }; // Callback Function Data
 
-    wchar_t* m_path;                               // Current path
-    wchar_t* m_pattern { nullptr };                // Wildcarded portion of the given pattern
-    size_t   m_patternBufferSize { 0 };            // Size of the pattern buffer.
-    bool     m_dirsOnly { false };                 // If true, report directories only
+    wchar_t* m_path;                           // Current path
+    wchar_t* m_pattern { nullptr };            // Wildcarded portion of the given pattern
+    size_t   m_patternBufferSize { 0 };        // Size of the pattern buffer.
+    bool     m_dirsOnly { false };             // If true, report directories only
 
     const wchar_t* m_ellipsisPattern { nullptr };  // Ellipsis Pattern
     wchar_t*       m_ellipsisPath { nullptr };     // Path part to match against ellipsis pattern
@@ -101,21 +94,21 @@ class PathMatcher
 
   private:   // Private Methods
 
-    bool AllocPatternBuff (size_t requestedSize);
+    bool allocPatternBuff (size_t requestedSize);
 
-    bool CopyGroomedPattern (const std::wstring pattern);
+    bool groomPattern (const std::wstring pattern);
 
-    void HandleEllipsisSubpath (wchar_t *pathEnd, const wchar_t *pattern, int iPattern);
+    void handleEllipsisSubpath (wchar_t *pathEnd, const wchar_t *pattern, int iPattern);
 
-    void MatchDir (wchar_t* pathend, const wchar_t* pattern);
-    void FetchAll (wchar_t* pathend, const wchar_t* ellipsisPrefix);
+    void matchDir (wchar_t* pathend, const wchar_t* pattern);
+    void fetchAll (wchar_t* pathend, const wchar_t* ellipsisPrefix);
 
-    wchar_t* AppendPath (wchar_t *pathEnd, const wchar_t *str);
+    wchar_t* appendPath (wchar_t *pathEnd, const wchar_t *str);
 
-    size_t PathSpaceLeft (const wchar_t *pathEnd) const;
+    size_t pathSpaceLeft (const wchar_t *pathEnd) const;
 };
 
 }; // Namespace PathMatch
 
 
-#endif  // ifndef _pathmatcher_h
+#endif  // _INCLUDED_PATHMATCHER_H
