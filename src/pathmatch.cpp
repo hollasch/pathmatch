@@ -42,7 +42,7 @@ using std::wstring;
 using std::wcout;
 using std::wcerr;
 
-static const wstring version = L"0.2.0-alpha5";
+static const wstring version = L"0.2.1";
 
     // Usage Information
 
@@ -85,6 +85,9 @@ Command Options:
         Print version information.
 
 Future Options:
+    --limit <count>, -l<count>
+        Limit output to the first <count> matches.
+
     --debug, -D
         Turn on debugging output.
 
@@ -117,6 +120,7 @@ struct CommandParameters
     wchar_t slashChar {L'/'};      // Forward or backward slash character to use
     bool    absolute {false};      // If true, report absolute path rather than default relative
     bool    filesOnly {false};     // If true, report only files (not directories)
+    int     limit {0};             // If positive, then maximum number of matches to print, else unlimited
     size_t  maxPathLength {0};     // Maximum path length
 
     vector<wstring> streamSources; // Source of file paths to match
@@ -189,6 +193,19 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                     case L'f': { commandParams.filesOnly = true;    break; }
                     case L'v': { commandParams.printVersion = true; return true; }
 
+                    case L'l': { // Limit option
+                        auto limitString = arg+2;
+                        if (!*limitString) {
+                            if (++argi >= argc) {
+                                wcerr << L"pathmatch: Expected numeric argument to '-l' option.\n";
+                                return false;
+                            }
+                            limitString = argv[argi];
+                        }
+                        commandParams.limit = std::max(0, _wtoi(limitString));
+                        break;
+                    }
+
                     case L's': { // Slash type option
                         auto slashString = arg+2;
                         if (!slashString[0]) {
@@ -234,7 +251,10 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                     commandParams.filesOnly = true;
 
                 } else if (equal(optionWord, L"stream")) {
-                    ++argi;
+                    if (++argi >= argc) {
+                        wcerr << L"pathmatch: missing argument for '--stream' option.\n";
+                        return false;
+                    }
                     if (!equal(argv[argi], L"(")) {
                         commandParams.streamSources.push_back(argv[argi]);
                     } else {
@@ -243,8 +263,18 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                         }
                     }
 
+                } else if (equal(optionWord, L"limit")) {
+                    if (++argi >= argc) {
+                        wcerr << L"pathmatch: missing argument for '--limit' option.\n";
+                        return false;
+                    }
+                    commandParams.limit = std::max(0, _wtoi(argv[argi]));
+
                 } else if (equal(optionWord, L"ignore")) {
-                    ++argi;
+                    if (++argi >= argc) {
+                        wcerr << L"pathmatch: missing argument for '--ignore' option.\n";
+                        return false;
+                    }
                     if (!equal(argv[argi], L"(")) {
                         commandParams.ignoreFiles.push_back(argv[argi]);
                     } else {
@@ -258,7 +288,10 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                     return true;
 
                 } else if (equal(optionWord, L"slash")) {
-                    ++argi;
+                    if (++argi >= argc) {
+                        wcerr << L"pathmatch: missing argument for '--slash' option.\n";
+                        return false;
+                    }
                     if (wcslen(argv[argi]) > 1) {
                         wcerr << L"pathmatch: Expected single character for slash option, got '"
                               << argv[argi] << L"'.\n";
@@ -322,6 +355,7 @@ void printParameters (const CommandParameters& params)
     wcout << L"        absolute: " << boolValue(params.absolute);
     wcout << L"       filesOnly: " << boolValue(params.filesOnly);
     wcout << L"       slashChar: " << params.slashChar << L'\n';
+    wcout << L"           limit: " << params.limit << L'\n';
     wcout << L"   maxPathLength: " << params.maxPathLength << L'\n';
     wcout << L"     ignoreFiles: "; printWordList(params.ignoreFiles); wcout << L'\n';
     wcout << L"   streamSources: "; printWordList(params.streamSources); wcout << L'\n';
