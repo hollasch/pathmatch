@@ -61,7 +61,7 @@ namespace {
 
     static bool isDoubleAsterisk (wstring::const_iterator strIt, wstring::const_iterator end) {
         // Return true if the string iterator points to a sequence of two asterisk characters.
-        return ((end - strIt) > 1) && (strIt[0] == L'*') && (strIt[1] == L'*');
+        return ((end - strIt) >= 2) && (strIt[0] == L'*') && (strIt[1] == L'*');
     }
 
     static bool isDoubleAsterisk (const wchar_t* str) {
