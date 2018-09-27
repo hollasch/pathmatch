@@ -429,7 +429,7 @@ bool PathMatcher::allocPatternBuff (size_t requestedSize)
 
 
 //--------------------------------------------------------------------------------------------------
-bool PathMatcher::groomPattern (const wstring pattern)
+bool PathMatcher::setGroomedPattern (const wstring pattern)
 {
     // This routine copies the given pattern into the m_pattern member field. While doing so, it
     // collapses sequences of repeating slashes, eliminates "/./" subpaths, resolves parent subpaths
@@ -593,7 +593,7 @@ bool PathMatcher::match (
     // Copy the groomed pattern (see comments for CopyGroomedPattern) into the appropriate member
     // fields.
 
-    if (!groomPattern(path_pattern))
+    if (!setGroomedPattern(path_pattern))
         return false;
 
     // We will divide the path_pattern up into two parts: the root path, and the remaining pattern.
