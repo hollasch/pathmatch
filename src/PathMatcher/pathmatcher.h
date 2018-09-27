@@ -76,20 +76,20 @@ class PathMatcher
 
     // Temporarily define a maximum path length. This is the Windows max path length, but it appears
     // that std::filesystem has no maximum path length (or it's not exposed).
-    static const auto mc_MaxPathLength { 260 };
+    static const auto mc_MaxPathLength = 260;
 
   private:   // Private Member Variables
 
-    MatchCallback* m_callback { nullptr };     // Match Callback Function
-    void*          m_callbackData { nullptr }; // Callback Function Data
+    MatchCallback* m_callback = nullptr;     // Match Callback Function
+    void*          m_callbackData = nullptr; // Callback Function Data
 
     wchar_t* m_path;                           // Current path
-    wchar_t* m_pattern { nullptr };            // Wildcarded portion of the given pattern
-    size_t   m_patternBufferSize { 0 };        // Size of the pattern buffer.
-    bool     m_dirsOnly { false };             // If true, report directories only
+    wchar_t* m_pattern = nullptr;            // Wildcarded portion of the given pattern
+    size_t   m_patternBufferSize = 0;        // Size of the pattern buffer.
+    bool     m_dirsOnly = false;             // If true, report directories only
 
-    const wchar_t* m_ellipsisPattern { nullptr };  // Ellipsis Pattern
-    wchar_t*       m_ellipsisPath { nullptr };     // Path part to match against ellipsis pattern
+    const wchar_t* m_ellipsisPattern = nullptr;  // Ellipsis Pattern
+    wchar_t*       m_ellipsisPath = nullptr;     // Path part to match against ellipsis pattern
 
 
   private:   // Private Methods
