@@ -366,7 +366,7 @@ PathMatcher::~PathMatcher ()
 {
     // PathMatcher Destructor
     delete[] m_path;
-    delete[] m_pattern;
+    delete[] m_patternBuff;
 }
 
 
@@ -412,11 +412,11 @@ bool PathMatcher::allocPatternBuff (size_t requestedSize)
     //--------
 
     if (requestedSize > m_patternBufferSize) {
-        delete[] m_pattern;
+        delete[] m_patternBuff;
 
-        m_pattern = new wchar_t [requestedSize];
+        m_patternBuff = new wchar_t [requestedSize];
 
-        if (!m_pattern) {
+        if (!m_patternBuff) {
             m_patternBufferSize = 0;
             return false;
         }
@@ -446,7 +446,7 @@ bool PathMatcher::setGroomedPattern (const wstring pattern)
         return false;
 
     auto src  = pattern.cbegin();
-    auto dest = m_pattern;
+    auto dest = m_patternBuff;
     auto pastAnyLeadingSlashes = false;
 
     // Preserve leading multiple slashes at the beginning of the pattern.
@@ -464,7 +464,7 @@ bool PathMatcher::setGroomedPattern (const wstring pattern)
         if ((src[0] == L'.') && ((src[1] == 0) || isSlash(src[1]))) {
             // The current subpath is a '.' directory.
 
-            auto atStart = (dest == m_pattern);
+            auto atStart = (dest == m_patternBuff);
 
             // Skip past any trailing slashes
 
@@ -516,7 +516,7 @@ bool PathMatcher::setGroomedPattern (const wstring pattern)
             for (src+=3;  isSlash(*src);  ++src)
                 continue;
 
-            auto destlen = dest - m_pattern;   // Current pattern length
+            auto destlen = dest - m_patternBuff;   // Current pattern length
             wchar_t* parent { nullptr };       // Candidate parent portion
 
             if ((destlen >= 2) && isSlash(dest[-1]) && !isSlash(dest[-2])) {
@@ -524,7 +524,7 @@ bool PathMatcher::setGroomedPattern (const wstring pattern)
 
                 // Scan backwards to the beginning of the parent directory.
 
-                while ((parent > m_pattern) && !isSlash(*parent))
+                while ((parent > m_patternBuff) && !isSlash(*parent))
                     --parent;
 
                 // Move past the prior leading slash if necessary (if the parent directory isn't
@@ -563,6 +563,8 @@ bool PathMatcher::setGroomedPattern (const wstring pattern)
 
     *dest = 0;
 
+    m_pattern = m_patternBuff;
+
     return true;
 }
 
@@ -600,9 +602,9 @@ bool PathMatcher::match (
     // For example, "C:/foo/.../bar*" would be divided up into a root of "C:/foo" and a pattern of
     // ".../bar*".
 
-    auto rootend   = m_pattern;
-    auto wildstart = m_pattern;
-    auto ptr       = m_pattern;
+    auto rootend   = m_patternBuff;
+    auto wildstart = m_patternBuff;
+    auto ptr       = m_patternBuff;
 
     // Locate the end of the root portion of the file pattern, and the start of the wildcard
     // pattern.
@@ -621,15 +623,15 @@ bool PathMatcher::match (
 
     size_t rootlen;    // Length of the root path string.
 
-    if (rootend == m_pattern) {
+    if (rootend == m_patternBuff) {
         m_path[0] = 0;
         rootlen = 0;
     } else {
         ++rootend;                // Include the '/' or ':' character.
 
-        rootlen = rootend - m_pattern;
+        rootlen = rootend - m_patternBuff;
 
-        if (FAILED(wcsncpy_s (m_path, (mc_MaxPathLength + 1), m_pattern, rootlen)))
+        if (FAILED(wcsncpy_s (m_path, (mc_MaxPathLength + 1), m_patternBuff, rootlen)))
             return false;
     }
 
