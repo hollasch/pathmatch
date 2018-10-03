@@ -96,8 +96,6 @@ class PathMatcher
 
   private:   // Private Methods
 
-    bool allocPatternBuff (size_t requestedSize);
-
     bool setGroomedPattern (const std::wstring pattern);
 
     void handleEllipsisSubpath (wchar_t *pathEnd, const wchar_t *pattern, int iPattern);

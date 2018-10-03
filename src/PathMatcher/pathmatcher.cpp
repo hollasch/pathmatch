@@ -399,36 +399,6 @@ wchar_t* PathMatcher::appendPath (wchar_t *pathend, const wchar_t *str)
 
 
 //--------------------------------------------------------------------------------------------------
-bool PathMatcher::allocPatternBuff (size_t requestedSize)
-{
-    // This function allocates, if necessary, the memory for the pattern buffer. If the size
-    // requested is already accomodated by the pattern buffer, no action is taken.
-    //
-    // Parameter 'requestedSize' is the total buffer size needed, including the string termination
-    // token.
-    //
-    // This function returns true if the buffer is ready, or false if the necessary memory could not
-    //  be allocated.
-    //--------
-
-    if (requestedSize > m_patternBufferSize) {
-        delete[] m_patternBuff;
-
-        m_patternBuff = new wchar_t [requestedSize];
-
-        if (!m_patternBuff) {
-            m_patternBufferSize = 0;
-            return false;
-        }
-
-        m_patternBufferSize = requestedSize;
-    }
-
-    return true;
-}
-
-
-//--------------------------------------------------------------------------------------------------
 bool PathMatcher::setGroomedPattern (const wstring pattern)
 {
     // This routine copies the given pattern into the m_pattern member field. While doing so, it
