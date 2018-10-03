@@ -442,8 +442,20 @@ bool PathMatcher::setGroomedPattern (const wstring pattern)
 
     // Allocate the buffer needed to store the pattern.
 
-    if (!allocPatternBuff (pattern.length() + 1))
-        return false;
+    auto desiredBufferSize = pattern.length() + 1;
+
+    if (desiredBufferSize > m_patternBufferSize) {
+        delete[] m_patternBuff;
+
+        m_patternBuff = new wchar_t [desiredBufferSize];
+
+        if (!m_patternBuff) {
+            m_patternBufferSize = 0;
+            return false;
+        }
+
+        m_patternBufferSize = desiredBufferSize;
+    }
 
     auto src  = pattern.cbegin();
     auto dest = m_patternBuff;
