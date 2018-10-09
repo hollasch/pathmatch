@@ -399,7 +399,7 @@ wchar_t* PathMatcher::appendPath (wchar_t *pathend, const wchar_t *str)
 
 
 //--------------------------------------------------------------------------------------------------
-bool PathMatcher::setGroomedPattern (const wstring pattern)
+wstring PathMatcher::getGroomedPattern (const wstring pattern)
 {
     // This routine copies the given pattern into the m_pattern member field. While doing so, it
     // collapses sequences of repeating slashes, eliminates "/./" subpaths, resolves parent subpaths
@@ -421,7 +421,7 @@ bool PathMatcher::setGroomedPattern (const wstring pattern)
 
         if (!m_patternBuff) {
             m_patternBufferSize = 0;
-            return false;
+            return wstring(L"");
         }
 
         m_patternBufferSize = desiredBufferSize;
@@ -545,9 +545,7 @@ bool PathMatcher::setGroomedPattern (const wstring pattern)
 
     *dest = 0;
 
-    m_pattern = m_patternBuff;
-
-    return true;
+    return wstring(m_patternBuff);
 }
 
 
@@ -577,7 +575,8 @@ bool PathMatcher::match (
     // Copy the groomed pattern (see comments for CopyGroomedPattern) into the appropriate member
     // fields.
 
-    if (!setGroomedPattern(path_pattern))
+    m_pattern = getGroomedPattern(path_pattern);
+    if (m_pattern.empty())
         return false;
 
     // We will divide the path_pattern up into two parts: the root path, and the remaining pattern.
