@@ -107,6 +107,159 @@ namespace {
         // Return true if string begins with parent ("..") subpath.
         return (strIt[0] == L'.' && strIt[1] == L'.' && (!strIt[2] || isSlash(strIt[2])));
     }
+
+
+    //--------------------------------------------------------------------------------------------------
+    wstring getGroomedPattern (const wstring pattern, bool& dirsOnly)
+    {
+        // This routine copies the given pattern into the m_pattern member field. While doing so, it
+        // collapses sequences of repeating slashes, eliminates "/./" subpaths, resolves parent subpaths
+        // ("/../"), and determines if a directory pattern (trailing slash) was specified.
+        //
+        // The parameter 'pattern' is the original caller-supplied pattern.
+        //
+        // This function returns false if this routine encounted an out-of-memory error.
+        //--------
+
+        // Allocate the buffer needed to store the pattern.
+
+        auto desiredBufferSize = pattern.length() + 1;
+        wchar_t* patternBuff = nullptr;
+        size_t   patternBufferSize = 0;
+
+        if (desiredBufferSize > patternBufferSize) {
+            patternBuff = new wchar_t [desiredBufferSize];
+
+            if (!patternBuff) {
+                patternBufferSize = 0;
+                return wstring(L"");
+            }
+
+            patternBufferSize = desiredBufferSize;
+        }
+
+        auto src  = pattern.cbegin();
+        auto dest = patternBuff;
+        auto pastAnyLeadingSlashes = false;
+
+        // Preserve leading multiple slashes at the beginning of the pattern.
+
+        while (isSlash(*src))
+            *dest++ = *src++;
+
+        // Now copy the remainder of the path. Eliminate "." subpaths, reduce repeating slashes to
+        // single slashes, and resolve ".." portions.
+
+        while (src != pattern.cend()) {
+
+            pastAnyLeadingSlashes = true;
+
+            if ((src[0] == L'.') && ((src[1] == 0) || isSlash(src[1]))) {
+                // The current subpath is a '.' directory.
+
+                auto atStart = (dest == patternBuff);
+
+                // Skip past any trailing slashes
+
+                do { ++ src; } while (isSlash(*src));
+
+                if (atStart) {
+                    // If the pattern is just "." or "./" (for any number of tailing slashes), then
+                    // just use "." as the pattern. If it is just prefixed with "./", then skip that
+                    // and continue.
+
+                    if (*src == 0) {
+                        *dest++ = L'.';
+                        dirsOnly = true;
+                    }
+                } else if (*src == 0) {
+                    // If the pattern ends in "." or "./" (for any number of trailing slashes), then
+                    // flag the search as directories-only and zap the prior slash.
+
+                    --dest;
+                    dirsOnly = true;
+                } else {
+                    // We've encountered a "./" in the middle of a path. In this case, just skip
+                    // the copy.
+                }
+
+            } else if (isSlash(*src)) {
+
+                while (isSlash(src[1]))   // Scan to the last slash in a series of slashes.
+                    ++src;
+
+                if (src[1] == 0) {
+                    // If the pattern ends in a slash, then record that the pattern
+                    // is matching directories only.
+                    dirsOnly = true;
+                    ++src;
+                } else {
+                    // Copy one slash only.
+                    *dest++ = c_slash;
+                    do { ++src; } while (isSlash(*src));
+                }
+
+            } else if (isUpDir(src)) {
+
+                // If we encounter a "../" in the middle of a pattern, then erase the prior parent
+                // directory if possible, otherwise append the "../" substring.
+
+                // Skip forward in the source string past all trailing slashes.
+
+                for (src+=3;  isSlash(*src);  ++src)
+                    continue;
+
+                auto destlen = dest - patternBuff;   // Current pattern length
+                wchar_t* parent { nullptr };       // Candidate parent portion
+
+                if ((destlen >= 2) && isSlash(dest[-1]) && !isSlash(dest[-2])) {
+                    parent = dest - 2;
+
+                    // Scan backwards to the beginning of the parent directory.
+
+                    while ((parent > patternBuff) && !isSlash(*parent))
+                        --parent;
+
+                    // Move past the prior leading slash if necessary (if the parent directory isn't
+                    // the first subdirectory in the path).
+
+                    if (isSlash(*parent)) ++parent;
+
+                    // If the parent directory is already a "../", then just append the current up
+                    // directory to the last one.
+
+                    auto parentStr = wstring(parent);
+
+                    if (isUpDir(parentStr.cbegin()))
+                        parent = nullptr;
+                }
+
+                if (parent)
+                    dest = parent;
+                else {
+                    *dest++ = L'.';
+                    *dest++ = L'.';
+                    *dest++ = c_slash;
+                }
+
+            } else {
+
+                // If no special cases, then just copy up till the next slash or end of pattern.
+
+                while (src != pattern.cend() && !isSlash(*src))
+                    *dest++ = *src++;
+            }
+        }
+
+        if (pastAnyLeadingSlashes)
+            assert (!isSlash(dest[-1]));
+
+        *dest = 0;
+        wstring groomedPath = patternBuff;
+        delete[] patternBuff;
+
+        return groomedPath;
+    }
 }
 
 
@@ -399,157 +552,6 @@ wchar_t* PathMatcher::appendPath (wchar_t *pathend, const wchar_t *str)
 
 
 //--------------------------------------------------------------------------------------------------
-wstring PathMatcher::getGroomedPattern (const wstring pattern)
-{
-    // This routine copies the given pattern into the m_pattern member field. While doing so, it
-    // collapses sequences of repeating slashes, eliminates "/./" subpaths, resolves parent subpaths
-    // ("/../"), and determines if a directory pattern (trailing slash) was specified.
-    //
-    // The parameter 'pattern' is the original caller-supplied pattern.
-    //
-    // This function returns false if this routine encounted an out-of-memory error.
-    //--------
-
-    // Allocate the buffer needed to store the pattern.
-
-    auto desiredBufferSize = pattern.length() + 1;
-
-    if (desiredBufferSize > m_patternBufferSize) {
-        delete[] m_patternBuff;
-
-        m_patternBuff = new wchar_t [desiredBufferSize];
-
-        if (!m_patternBuff) {
-            m_patternBufferSize = 0;
-            return wstring(L"");
-        }
-
-        m_patternBufferSize = desiredBufferSize;
-    }
-
-    auto src  = pattern.cbegin();
-    auto dest = m_patternBuff;
-    auto pastAnyLeadingSlashes = false;
-
-    // Preserve leading multiple slashes at the beginning of the pattern.
-
-    while (isSlash(*src))
-        *dest++ = *src++;
-
-    // Now copy the remainder of the path. Eliminate "." subpaths, reduce repeating slashes to
-    // single slashes, and resolve ".." portions.
-
-    while (src != pattern.cend()) {
-
-        pastAnyLeadingSlashes = true;
-
-        if ((src[0] == L'.') && ((src[1] == 0) || isSlash(src[1]))) {
-            // The current subpath is a '.' directory.
-
-            auto atStart = (dest == m_patternBuff);
-
-            // Skip past any trailing slashes
-
-            do { ++ src; } while (isSlash(*src));
-
-            if (atStart) {
-                // If the pattern is just "." or "./" (for any number of tailing slashes), then
-                // just use "." as the pattern. If it is just prefixed with "./", then skip that
-                // and continue.
-
-                if (*src == 0) {
-                    *dest++ = L'.';
-                    m_dirsOnly = true;
-                }
-            } else if (*src == 0) {
-                // If the pattern ends in "." or "./" (for any number of trailing slashes), then
-                // flag the search as directories-only and zap the prior slash.
-
-                --dest;
-                m_dirsOnly = true;
-            } else {
-                // We've encountered a "./" in the middle of a path. In this case, just skip
-                // the copy.
-            }
-
-        } else if (isSlash(*src)) {
-
-            while (isSlash(src[1]))   // Scan to the last slash in a series of slashes.
-                ++src;
-
-            if (src[1] == 0) {
-                // If the pattern ends in a slash, then record that the pattern
-                // is matching directories only.
-                m_dirsOnly = true;
-                ++src;
-            } else {
-                // Copy one slash only.
-                *dest++ = c_slash;
-                do { ++src; } while (isSlash(*src));
-            }
-
-        } else if (isUpDir(src)) {
-
-            // If we encounter a "../" in the middle of a pattern, then erase the prior parent
-            // directory if possible, otherwise append the "../" substring.
-
-            // Skip forward in the source string past all trailing slashes.
-
-            for (src+=3;  isSlash(*src);  ++src)
-                continue;
-
-            auto destlen = dest - m_patternBuff;   // Current pattern length
-            wchar_t* parent { nullptr };       // Candidate parent portion
-
-            if ((destlen >= 2) && isSlash(dest[-1]) && !isSlash(dest[-2])) {
-                parent = dest - 2;
-
-                // Scan backwards to the beginning of the parent directory.
-
-                while ((parent > m_patternBuff) && !isSlash(*parent))
-                    --parent;
-
-                // Move past the prior leading slash if necessary (if the parent directory isn't
-                // the first subdirectory in the path).
-
-                if (isSlash(*parent)) ++parent;
-
-                // If the parent directory is already a "../", then just append the current up
-                // directory to the last one.
-
-                auto parentStr = wstring(parent);
-
-                if (isUpDir(parentStr.cbegin()))
-                    parent = nullptr;
-            }
-
-            if (parent)
-                dest = parent;
-            else {
-                *dest++ = L'.';
-                *dest++ = L'.';
-                *dest++ = c_slash;
-            }
-
-        } else {
-
-            // If no special cases, then just copy up till the next slash or end of pattern.
-
-            while (src != pattern.cend() && !isSlash(*src))
-                *dest++ = *src++;
-        }
-    }
-
-    if (pastAnyLeadingSlashes)
-        assert (!isSlash(dest[-1]));
-
-    *dest = 0;
-
-    return wstring(m_patternBuff);
-}
-
-
-//--------------------------------------------------------------------------------------------------
 bool PathMatcher::match (
     const wstring  path_pattern,
     MatchCallback* callback_func,
@@ -575,9 +577,11 @@ bool PathMatcher::match (
     // Copy the groomed pattern (see comments for CopyGroomedPattern) into the appropriate member
     // fields.
 
-    m_pattern = getGroomedPattern(path_pattern);
+    m_pattern = getGroomedPattern(path_pattern, m_dirsOnly);
     if (m_pattern.empty())
         return false;
+    m_patternBuff = new wchar_t[m_pattern.length() + 1];
+    wcscpy_s (m_patternBuff, m_pattern.length() + 1, m_pattern.c_str());
 
     // We will divide the path_pattern up into two parts: the root path, and the remaining pattern.
     // For example, "C:/foo/.../bar*" would be divided up into a root of "C:/foo" and a pattern of
@@ -612,11 +616,17 @@ bool PathMatcher::match (
 
         rootlen = rootend - m_patternBuff;
 
-        if (FAILED(wcsncpy_s (m_path, (mc_MaxPathLength + 1), m_patternBuff, rootlen)))
+        if (FAILED(wcsncpy_s (m_path, (mc_MaxPathLength + 1), m_patternBuff, rootlen))) {
+            delete[] m_patternBuff;
+            m_patternBuff = nullptr;
             return false;
+        }
     }
 
     matchDir (m_path + rootlen, wildstart);
+
+    delete[] m_patternBuff;
+    m_patternBuff = nullptr;
 
     return true;
 }

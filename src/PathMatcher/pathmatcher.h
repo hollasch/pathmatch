@@ -96,8 +96,6 @@ class PathMatcher
 
   private:   // Private Methods
 
-    std::wstring getGroomedPattern (const std::wstring pattern);
-
     void handleEllipsisSubpath (wchar_t *pathEnd, const wchar_t *pattern, int iPattern);
 
     void matchDir (wchar_t* pathend, const wchar_t* pattern);
