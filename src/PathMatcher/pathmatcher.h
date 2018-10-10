@@ -87,8 +87,8 @@ class PathMatcher
     bool     m_dirsOnly = false;  // If true, report directories only
 
     std::wstring m_pattern;
-    wchar_t* m_patternBuff = nullptr;        // Wildcarded portion of the given pattern
-    size_t   m_patternBufferSize = 0;        // Size of the pattern buffer.
+    wchar_t*     m_patternBuff = nullptr;        // Wildcarded portion of the given pattern
+    size_t       m_patternBufferSize = 0;        // Size of the pattern buffer.
 
     const wchar_t* m_ellipsisPattern = nullptr;  // Ellipsis Pattern
     wchar_t*       m_ellipsisPath = nullptr;     // Path part to match against ellipsis pattern
