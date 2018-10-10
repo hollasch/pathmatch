@@ -44,8 +44,10 @@
 namespace fs = std::filesystem;
 
 using std::wstring;
-using std::make_unique;
+using std::shared_ptr;
+using std::make_shared;
 using std::unique_ptr;
+using std::make_unique;
 
 
 // =================================================================================================
@@ -124,11 +126,11 @@ namespace {
         // Allocate the buffer needed to store the pattern.
 
         auto desiredBufferSize = pattern.length() + 1;
-        wchar_t* patternBuff = nullptr;
         size_t   patternBufferSize = 0;
+        unique_ptr<wchar_t[]> patternBuff;
 
         if (desiredBufferSize > patternBufferSize) {
-            patternBuff = new wchar_t [desiredBufferSize];
+            patternBuff = std::make_unique<wchar_t[]>(desiredBufferSize);
 
             if (!patternBuff) {
                 patternBufferSize = 0;
@@ -139,7 +141,7 @@ namespace {
         }
 
         auto src  = pattern.cbegin();
-        auto dest = patternBuff;
+        auto dest = patternBuff.get();
         auto pastAnyLeadingSlashes = false;
 
         // Preserve leading multiple slashes at the beginning of the pattern.
@@ -157,7 +159,7 @@ namespace {
             if ((src[0] == L'.') && ((src[1] == 0) || isSlash(src[1]))) {
                 // The current subpath is a '.' directory.
 
-                auto atStart = (dest == patternBuff);
+                auto atStart = (dest == patternBuff.get());
 
                 // Skip past any trailing slashes
 
@@ -209,7 +211,7 @@ namespace {
                 for (src+=3;  isSlash(*src);  ++src)
                     continue;
 
-                auto destlen = dest - patternBuff;   // Current pattern length
+                auto destlen = dest - patternBuff.get();   // Current pattern length
                 wchar_t* parent { nullptr };       // Candidate parent portion
 
                 if ((destlen >= 2) && isSlash(dest[-1]) && !isSlash(dest[-2])) {
@@ -217,7 +219,7 @@ namespace {
 
                     // Scan backwards to the beginning of the parent directory.
 
-                    while ((parent > patternBuff) && !isSlash(*parent))
+                    while ((parent > patternBuff.get()) && !isSlash(*parent))
                         --parent;
 
                     // Move past the prior leading slash if necessary (if the parent directory isn't
@@ -255,10 +257,8 @@ namespace {
             assert (!isSlash(dest[-1]));
 
         *dest = 0;
-        wstring groomedPath = patternBuff;
-        delete[] patternBuff;
 
-        return groomedPath;
+        return wstring(patternBuff.get());
     }
 }
 
