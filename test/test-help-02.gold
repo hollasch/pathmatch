@@ -1,0 +1,57 @@
+pathmatch --help
+
+pathmatch  v0.2.1  https://github.com/hollasch/pathmatch/
+pathmatch: Report files and directories matching the specified pattern
+Usage: pathmatch [<options>] <pattern> ... <pattern>
+
+    `pathmatch` finds and reports all files and directories matching wildcard
+    patterns. These patterns may contain the special characters '?', '*', and
+    '...'. The '?' pattern matches any single character, '*' matches multiple
+    characters except slashes, and '...' matches multiple characters including
+    slashes. For example, the following patterns all match the file
+    "abc\def\ghi\jkl": "abc\d?f\??i\jkl", "abc\*\*\jkl", "abc\...\jkl", and
+    "ab...kl".
+
+    The following command options are supported:
+
+Command Options:
+    --absolute, -a
+        Report absolute paths. By default, reported paths are relative to the
+        current working directory.
+
+    --files, -f
+        Report files only (no directories). To report directories only, append
+        a slash to the pattern.
+
+    --help, /?, -?, -h
+        Print help information.
+
+    --slash [/|\], -s[/|\]
+        Specifies the slash direction to be reported. By default, slashes will
+        be back slashes. Use "-s/" to report paths with forward slashes, "-s\"
+        to report backslashes. A space is allowed before the slash.
+
+    --version, -v
+        Print version information.
+
+Future Options:
+    --limit <count>, -l<count>
+        Limit output to the first <count> matches.
+
+    --debug, -D
+        Turn on debugging output.
+
+    --dirSlash, -d
+        Print matching directories with a trailing slash.
+
+    --stream <fileName>|( <file1> <file2> ... <fileN> )
+        Apply patterns against input stream of filenames. The special filename
+        '--' reads filenames from standard input, and may be specified for a
+        single option only. The multiple file option requires space-separated
+        '(' and ')' delimiters.
+
+    --ignore <fileName>|( <file1> <file2> ... <fileN> )
+        Suppress output of files and directories that match rules inside a file
+        of patterns. The special filename '--' reads from standard input, and
+        may be specified for a single option only. The multiple file option
+        requires space-separated '(' and ')' delimiters
