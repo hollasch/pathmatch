@@ -1,0 +1,17 @@
+pathmatch --debug
+
+Command Parameters:
+       printHelp: false
+    printPreview: false
+    printVersion: false
+           debug: true
+        dirSlash: false
+        absolute: false
+       filesOnly: false
+       slashChar: /
+           limit: 0
+   maxPathLength: 0
+     ignoreFiles: <empty>
+   streamSources: <empty>
+        patterns: <empty>
+

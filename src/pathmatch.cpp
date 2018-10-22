@@ -42,15 +42,18 @@ using std::wstring;
 using std::wcout;
 using std::wcerr;
 
-static const wstring version = L"0.2.1";
+
+namespace { // File-local Variables & Parameters
+
+const wstring version = L"0.2.1";
 
     // Usage Information
 
-static const wstring usage_header {
+const wstring helpHeader {
     L"pathmatch  v" + version + L"  https://github.com/hollasch/pathmatch/"
 };
 
-static const wstring usage =
+const wstring usage =
 LR"(pathmatch: Report files and directories matching the specified pattern
 Usage: pathmatch [<options>] <pattern> ... <pattern>
 
@@ -84,15 +87,35 @@ Command Options:
     --version, -v
         Print version information.
 
-Future Options:
-    --limit <count>, -l<count>
-        Limit output to the first <count> matches.
+    --preview
+        Print preview of planned command options.
+)";
+
+const wstring usagePreview =
+LR"(Preview of Planned Options:
+
+    File Patterns
+        - The pattern '**' is a synonym for '...'.
+        - The pattern '{a,b,c}' matches 'a', or 'b', or 'c'. Subparts may
+          themselves be patterns.
+
+    --breadthFirst
+        Print results in breadth-first fashion (shallow entries before deep
+        ones). By default, results are printed depth-first (all entries under
+        one directory before proceeding to the next one).
 
     --debug, -D
         Turn on debugging output.
 
+    --limit <count>, -l<count>
+        Limit output to the first <count> matches.
+
+    --maxDepth <depth>, -m<depth>
+        Limit the descent depth to <depth> levels. Level 0 is files in current
+        directory only, level 1 is entries of each subdirectory, and so on.
+
     --dirSlash, -d
-        Print matching directories with a trailing slash.
+        Print trailing slash for directory matches.
 
     --stream <fileName>|( <file1> <file2> ... <fileN> )
         Apply patterns against input stream of filenames. The special filename
@@ -112,6 +135,7 @@ struct CommandParameters
     // The CommandParameters structure holds the options for use by the callback routine.
 
     bool printHelp {false};        // Print help and exit.
+    bool printPreview {false};     // Print preview help and exit.
     bool printVersion {false};     // Print version information and exit.
 
     bool debug {false};            // Print debug information
@@ -129,10 +153,6 @@ struct CommandParameters
 };
 
 
-//--------------------------------------------------------------------------------------------------
-// Helper Functions
-//--------------------------------------------------------------------------------------------------
-
 inline bool isSlash (wchar_t c) {
     // Return true if the given character is a forward or backward slash.
     return (c == L'/') || (c == L'\\');
@@ -142,6 +162,7 @@ inline bool equal (const wchar_t* a, const wchar_t* b) {
     // Return true if the two wchar_t strings are identical.
     return 0 == _wcsicmp(a, b);
 }
+};
 
 
 //--------------------------------------------------------------------------------------------------
@@ -287,6 +308,10 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                     commandParams.printHelp = true;
                     return true;
 
+                } else if (equal(optionWord, L"preview")) {
+                    commandParams.printPreview = true;
+                    return true;
+
                 } else if (equal(optionWord, L"slash")) {
                     if (++argi >= argc) {
                         wcerr << L"pathmatch: missing argument for '--slash' option.\n";
@@ -349,6 +374,7 @@ void printParameters (const CommandParameters& params)
 
     wcout << L"Command Parameters:\n";
     wcout << L"       printHelp: " << boolValue(params.printHelp);
+    wcout << L"    printPreview: " << boolValue(params.printPreview);
     wcout << L"    printVersion: " << boolValue(params.printVersion);
     wcout << L"           debug: " << boolValue(params.debug);
     wcout << L"        dirSlash: " << boolValue(params.dirSlash);
@@ -447,12 +473,17 @@ int wmain (int argc, wchar_t *argv[])
     }
 
     if (commandParams.printHelp) {
-        wcout << usage_header << L'\n' << usage;
+        wcout << helpHeader << L'\n' << usage;
+        exit(0);
+    }
+
+    if (commandParams.printPreview) {
+        wcout << usagePreview;
         exit(0);
     }
 
     if (commandParams.printVersion) {
-        wcout << usage_header << L'\n';
+        wcout << helpHeader << L'\n';
         exit(0);
     }
 

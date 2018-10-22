@@ -1,0 +1,38 @@
+pathmatch --preview
+
+Preview of Planned Options:
+
+    File Patterns
+        - The pattern '**' is a synonym for '...'.
+        - The pattern '{a,b,c}' matches 'a', or 'b', or 'c'. Subparts may
+          themselves be patterns.
+
+    --breadthFirst
+        Print results in breadth-first fashion (shallow entries before deep
+        ones). By default, results are printed depth-first (all entries under
+        one directory before proceeding to the next one).
+
+    --debug, -D
+        Turn on debugging output.
+
+    --limit <count>, -l<count>
+        Limit output to the first <count> matches.
+
+    --maxDepth <depth>, -m<depth>
+        Limit the descent depth to <depth> levels. Level 0 is files in current
+        directory only, level 1 is entries of each subdirectory, and so on.
+
+    --dirSlash, -d
+        Print trailing slash for directory matches.
+
+    --stream <fileName>|( <file1> <file2> ... <fileN> )
+        Apply patterns against input stream of filenames. The special filename
+        '--' reads filenames from standard input, and may be specified for a
+        single option only. The multiple file option requires space-separated
+        '(' and ')' delimiters.
+
+    --ignore <fileName>|( <file1> <file2> ... <fileN> )
+        Suppress output of files and directories that match rules inside a file
+        of patterns. The special filename '--' reads from standard input, and
+        may be specified for a single option only. The multiple file option
+        requires space-separated '(' and ')' delimiters
