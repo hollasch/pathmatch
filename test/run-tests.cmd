@@ -30,11 +30,14 @@ if not defined DIFF set DIFF=diff
 
 set passCount=0
 set testCount=0
+set haltTests=0
 
 echo.
 for %%f in (test-*.gold) do (
     call :runTest %%f
+    if !haltTests! equ 1 goto :testEnd
 )
+:testEnd
 echo.
 
 
@@ -78,7 +81,7 @@ REM ----------------------------------------------------------------------------
         echo fail - %testName%
         :query
         set action=n
-        set /p action="       [n]ext, [d]iff, [a]ccept? (default is next) "
+        set /p action="       [n]ext, [d]iff, [a]ccept, [q]uit? (default is next) "
         if /i "!action!" equ "d" (
             call %DIFF% %testName%.gold %testOutput%
             goto :query
@@ -87,6 +90,9 @@ REM ----------------------------------------------------------------------------
             set /a passCount = !passCount! + 1
             goto :endif
         ) else if /i "!action!" equ "n" (
+            goto :endif
+        ) else if /i "!action!" equ "q" (
+            set haltTests=1
             goto :endif
         )
         goto :query
