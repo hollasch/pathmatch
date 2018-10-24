@@ -79,6 +79,7 @@ REM ----------------------------------------------------------------------------
         goto :endif
     :fail
         echo fail - %testName%
+        call diff --unified=8 %testName%.gold %testOutput%
         :query
         set action=n
         set /p action="       [n]ext, [d]iff, [a]ccept, [q]uit? (default is next) "
