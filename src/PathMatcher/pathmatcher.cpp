@@ -93,7 +93,8 @@ namespace {
         return (str[0] == L'*') || isEllipsis(str);
     }
 
-    static const wchar_t c_slash { L'\\' };
+    static const wchar_t c_slash = L'\\';
+    static const wchar_t c_multiWild = L'\u001d';
 
     static bool entryIsADir (const WIN32_FIND_DATA &finddata) {
         // Returns true if the current directory entry is a directory.
@@ -111,17 +112,30 @@ namespace {
     }
 
 
-    //--------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------
     wstring getGroomedPattern (const wstring pattern, bool& dirsOnly)
     {
-        // This routine copies the given pattern into the m_pattern member field. While doing so, it
-        // collapses sequences of repeating slashes, eliminates "/./" subpaths, resolves parent subpaths
-        // ("/../"), and determines if a directory pattern (trailing slash) was specified.
+        // FUTURE SPEC:
+        // This function doesn't yet accomplish the goals described below. To perform these, it
+        // should first split the string into components separated by slashes, then perform the
+        // transformations below, then reassemble them (or perhaps not?).
         //
-        // The parameter 'pattern' is the original caller-supplied pattern.
+        // This function returns a groomed path pattern from the supplied pattern. It performs the
+        // following transformations:
         //
-        // This function returns false if this routine encounted an out-of-memory error.
-        //--------
+        //   1. /a/../ -> /           (a)
+        //   2. // -> /
+        //   3. /a/.../../ -> /.../   (a)
+        //   4. /.../.../ -> /.../
+        //   5. /./ -> /
+        //
+        //   (a) Determine whether to allow (and how to handle) `..` paths in patterns.
+        //
+        // It also replaces multi-wild sequences (`**`, `...`) with the c_multiWild character.
+        //
+        // In addition, it sets the `dirsOnly` out parameter according to whether the pattern had
+        // a trailing slash to indicate matches with directories only.
+        // --------
 
         // Allocate the buffer needed to store the pattern.
 
