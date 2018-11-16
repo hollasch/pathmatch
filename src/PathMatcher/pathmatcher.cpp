@@ -94,7 +94,7 @@ namespace {
     }
 
     static const wchar_t c_slash = L'\\';
-    static const wchar_t c_multiWild = L'\u001d';
+    static const wchar_t c_multiWild = L'\u001d';    // U+001D - GROUP SEPARATOR
 
     static bool entryIsADir (const WIN32_FIND_DATA &finddata) {
         // Returns true if the current directory entry is a directory.
