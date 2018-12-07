@@ -39,6 +39,7 @@
 #include <locale>
 #include <memory>
 #include <string>
+#include <vector>
 
 
 namespace fs = std::filesystem;
@@ -48,6 +49,7 @@ using std::shared_ptr;
 using std::make_shared;
 using std::unique_ptr;
 using std::make_unique;
+using std::vector;
 
 
 // =================================================================================================
@@ -113,7 +115,7 @@ namespace {
 
 
     //----------------------------------------------------------------------------------------------
-    wstring getGroomedPattern (const wstring pattern, bool& dirsOnly)
+    vector<wstring> getGroomedPattern (const wstring pattern, bool& dirsOnly)
     {
         // FUTURE SPEC:
         // This function doesn't yet accomplish the goals described below. To perform these, it
@@ -130,6 +132,7 @@ namespace {
         //   5. /./ -> /
         //
         //   (a) Determine whether to allow (and how to handle) `..` paths in patterns.
+        //       --> No `..` paths allowed after wildcard patterns
         //
         // It also replaces multi-wild sequences (`**`, `...`) with the c_multiWild character.
         //
@@ -137,6 +140,16 @@ namespace {
         // a trailing slash to indicate matches with directories only.
         // --------
 
+        wprintf (L"Starting getGroomedPattern\n");
+
+        vector<wstring> patternVec;
+        patternVec.push_back(L"one");
+        patternVec.push_back(L"two");
+        patternVec.push_back(L"three");
+
+        return patternVec;
+
+        #if 0
         // Allocate the buffer needed to store the pattern.
 
         auto desiredBufferSize = pattern.length() + 1;
@@ -273,6 +286,7 @@ namespace {
         *dest = 0;
 
         return wstring(patternBuff.get());
+        #endif
     }
 }
 
@@ -591,9 +605,18 @@ bool PathMatcher::match (
     // Copy the groomed pattern (see comments for CopyGroomedPattern) into the appropriate member
     // fields.
 
-    m_pattern = getGroomedPattern(path_pattern, m_dirsOnly);
+    // m_pattern = getGroomedPattern(path_pattern, m_dirsOnly);
+    auto patternVec = getGroomedPattern(path_pattern, m_dirsOnly);
+
+    wprintf (L"Pattern vector:\n");
+    for (auto component : patternVec) {
+        wprintf (L"    '%s'\n", component.c_str());
+    }
+    return false;
+
     if (m_pattern.empty())
         return false;
+
     m_patternBuff = new wchar_t[m_pattern.length() + 1];
     wcscpy_s (m_patternBuff, m_pattern.length() + 1, m_pattern.c_str());
 
