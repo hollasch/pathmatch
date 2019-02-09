@@ -58,57 +58,57 @@ using std::vector;
 
 namespace {
 
-    static bool isSlash (const wchar_t c) {
+    bool isSlash (const wchar_t c) {
         // Return true if and only if the character is a forward or backward slash.
         return (c == L'/') || (c == L'\\');
     }
 
-    static bool isDoubleAsterisk (wstring::const_iterator strIt, wstring::const_iterator end) {
+    bool isDoubleAsterisk (wstring::const_iterator strIt, wstring::const_iterator end) {
         // Return true if the string iterator points to a sequence of two asterisk characters.
         return ((end - strIt) >= 2) && (strIt[0] == L'*') && (strIt[1] == L'*');
     }
 
-    static bool isDoubleAsterisk (const wchar_t* str) {
+    bool isDoubleAsterisk (const wchar_t* str) {
         // Return true if the string begins with a sequence of two asterisk characters.
         return (str[0] == L'*') && (str[1] == L'*');
     }
 
-    static bool isEllipsis (wstring::const_iterator strIt, wstring::const_iterator end) {
+    bool isEllipsis (wstring::const_iterator strIt, wstring::const_iterator end) {
         // Return true iff string iterator begins with "...".
         return ((end - strIt) >= 3) && (strIt[0] == L'.') && (strIt[1] == L'.') && (strIt[2] == L'.');
     }
 
-    static bool isEllipsis (const wchar_t* str) {
+    bool isEllipsis (const wchar_t* str) {
         // Return true iff string begins with "...".
         return (str[0] == L'.') && (str[1] == L'.') && (str[2] == L'.');
     }
 
-    static bool isMultiWildStr (wstring::const_iterator strIt, wstring::const_iterator end) {
+    bool isMultiWildStr (wstring::const_iterator strIt, wstring::const_iterator end) {
         // Return true if and only if the string begins with a wildcard that matches
         // multiple characters ("*" or "..." or "**").
         return (strIt != end) && ((*strIt == L'*') || isEllipsis(strIt, end));
     }
 
-    static bool isMultiWildStr (const wchar_t* str) {
+    bool isMultiWildStr (const wchar_t* str) {
         // Return true if and only if the string begins with a wildcard that matches
         // multiple characters ("*" or "..." or "**").
         return (str[0] == L'*') || isEllipsis(str);
     }
 
-    static const wchar_t c_slash = L'\\';
-    static const wchar_t c_multiWild = L'\u001d';    // U+001D - GROUP SEPARATOR
+    const wchar_t c_slash = L'\\';
+    const wchar_t c_multiWild = L'\u001d';    // U+001D - GROUP SEPARATOR
 
-    static bool entryIsADir (const WIN32_FIND_DATA &finddata) {
+    bool entryIsADir (const WIN32_FIND_DATA &finddata) {
         // Returns true if the current directory entry is a directory.
         return 0 != (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
     }
 
-    static bool isDotsDir (const wchar_t *str) {
+    bool isDotsDir (const wchar_t *str) {
         // Return true if the string is either "." or ".."
         return (str[0] == L'.') && (!str[1] || ((str[1] == L'.') && !str[2]));
     }
 
-    static bool isUpDir (const wstring::const_iterator strIt) {
+    bool isUpDir (const wstring::const_iterator strIt) {
         // Return true if string begins with parent ("..") subpath.
         return (strIt[0] == L'.' && strIt[1] == L'.' && (!strIt[2] || isSlash(strIt[2])));
     }
@@ -295,8 +295,7 @@ namespace {
 // PathMatch Namespace
 // =================================================================================================
 
-namespace PathMatch
-{
+namespace PathMatch {
 
 
 // =================================================================================================
