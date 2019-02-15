@@ -4,7 +4,7 @@
 // Routines for matching wildcard path specifications against a given directory tree.
 //
 // _________________________________________________________________________________________________
-// Copyright 2010 Steve Hollasch
+// Copyright 2010-2019 Steve Hollasch
 //
 // MIT License
 //

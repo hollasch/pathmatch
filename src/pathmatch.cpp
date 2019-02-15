@@ -5,7 +5,7 @@
 // string below for a description of its behavior.
 //
 // _________________________________________________________________________________________________
-// Copyright 2010 Steve Hollasch
+// Copyright 2010-2019 Steve Hollasch
 //
 // MIT License
 //

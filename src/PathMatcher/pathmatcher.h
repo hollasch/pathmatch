@@ -7,7 +7,7 @@
 // entries in a subdirectory tree.
 //
 // _________________________________________________________________________________________________
-// Copyright 2010 Steve Hollasch
+// Copyright 2010-2019 Steve Hollasch
 //
 // MIT License
 //
