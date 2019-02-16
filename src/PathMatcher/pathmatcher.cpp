@@ -95,7 +95,7 @@ namespace {
         return (str[0] == L'*') || isEllipsis(str);
     }
 
-    const wchar_t c_slash = L'\\';
+    const wchar_t c_slash = L'/';
     const wchar_t c_multiWild = L'\u001d';    // U+001D - GROUP SEPARATOR
 
     bool entryIsADir (const WIN32_FIND_DATA &finddata) {
@@ -115,29 +115,27 @@ namespace {
 
 
     //----------------------------------------------------------------------------------------------
-    vector<wstring> getGroomedPattern (const wstring pattern, bool& dirsOnly)
+    bool getGroomedPattern (const wstring pattern, vector<wstring>& outVec, bool& dirsOnly)
     {
-        // FUTURE SPEC:
-        // This function doesn't yet accomplish the goals described below. To perform these, it
-        // should first split the string into components separated by slashes, then perform the
-        // transformations below, then reassemble them (or perhaps not?).
+        // This procedure parses the given pattern into a vector of patterns, using the output
+        // parameters `outVec` and `dirsOnly`. The `dirsOnly` parameter indicates whether the
+        // pattern specifies directories only (that is, ends in a directory separator).
         //
-        // This function returns a groomed path pattern from the supplied pattern. It performs the
-        // following transformations:
+        // To perform this, it splits the string into components separated by slashes, then performs
+        // the transformations below.
         //
-        //   1. /a/../ -> /           (a)
-        //   2. // -> /
-        //   3. /a/.../../ -> /.../   (a)
-        //   4. /.../.../ -> /.../
-        //   5. /./ -> /
+        //     a/./b -> 'a', 'b'
+        //         Simple '.' subdirectories are removed.
         //
-        //   (a) Determine whether to allow (and how to handle) `..` paths in patterns.
-        //       --> No `..` paths allowed after wildcard patterns
+        //     a////b -> 'a', 'b'
+        //         Any number of slashes collapse to a single slash.
         //
-        // It also replaces multi-wild sequences (`**`, `...`) with the c_multiWild character.
+        //     /a/b/c/../../foo -> 'a', 'foo'
+        //         Paths are collapse _before_ matching. In this example, the subdirectories b/c/
+        //         don't need to actually exist under /a.
         //
-        // In addition, it sets the `dirsOnly` out parameter according to whether the pattern had
-        // a trailing slash to indicate matches with directories only.
+        //     a/.../**/.../b -> 'a', <m>, 'b'
+        //         Single or multiple '...' or '**' paths collapse to a single multiWild character.
         // --------
 
         wprintf (L"Starting getGroomedPattern\n");
