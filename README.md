@@ -15,6 +15,7 @@ patterns:
 |:-----:|:---------------------------------------------------------
 | `?`   | Matches any single character
 | `*`   | Matches zero or more of any character, except '/'.
+| `**`  | Matches zero or more of any character, including '/'.
 | `...` | Matches zero or more of any character, including '/'.
 
 
@@ -23,7 +24,7 @@ Examples
 
     |  Sequence   | Result                                                        |
     |-------------|---------------------------------------------------------------|
-    | `a?c`       | Matches `abc`, `axc`, and `aac`. Does not match `ac`, `abbc`, | 
+    | `a?c`       | Matches `abc`, `axc`, and `aac`. Does not match `ac`, `abbc`, |
     |             | or `a/c`.                                                     |
     |-------------|---------------------------------------------------------------|
     | `a*c`       | Matches "ac", "abc" and "azzzzzzzc". Does not match "a/c".    |
