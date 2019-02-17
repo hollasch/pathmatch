@@ -36,20 +36,17 @@
 #include <windows.h>
 
 #include <filesystem>
+#include <iostream>
 #include <locale>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
 
-namespace fs = std::filesystem;
+using namespace std;
 
-using std::wstring;
-using std::shared_ptr;
-using std::make_shared;
-using std::unique_ptr;
-using std::make_unique;
-using std::vector;
+namespace fs = std::filesystem;
 
 
 // =================================================================================================
@@ -58,60 +55,104 @@ using std::vector;
 
 namespace {
 
-    bool isSlash (const wchar_t c) {
+    //----------------------------------------------------------------------------------------------
+    bool isSlash (const wchar_t c)
+    {
         // Return true if and only if the character is a forward or backward slash.
         return (c == L'/') || (c == L'\\');
     }
 
-    bool isDoubleAsterisk (wstring::const_iterator strIt, wstring::const_iterator end) {
+    //----------------------------------------------------------------------------------------------
+    bool isDoubleAsterisk (wstring::const_iterator strIt, wstring::const_iterator end)
+    {
         // Return true if the string iterator points to a sequence of two asterisk characters.
         return ((end - strIt) >= 2) && (strIt[0] == L'*') && (strIt[1] == L'*');
     }
 
-    bool isDoubleAsterisk (const wchar_t* str) {
+    //----------------------------------------------------------------------------------------------
+    bool isDoubleAsterisk (const wchar_t* str)
+    {
         // Return true if the string begins with a sequence of two asterisk characters.
         return (str[0] == L'*') && (str[1] == L'*');
     }
 
-    bool isEllipsis (wstring::const_iterator strIt, wstring::const_iterator end) {
+    //----------------------------------------------------------------------------------------------
+    bool isEllipsis (wstring::const_iterator strIt, wstring::const_iterator end)
+    {
         // Return true iff string iterator begins with "...".
         return ((end - strIt) >= 3) && (strIt[0] == L'.') && (strIt[1] == L'.') && (strIt[2] == L'.');
     }
 
-    bool isEllipsis (const wchar_t* str) {
+    //----------------------------------------------------------------------------------------------
+    bool isEllipsis (const wchar_t* str)
+    {
         // Return true iff string begins with "...".
         return (str[0] == L'.') && (str[1] == L'.') && (str[2] == L'.');
     }
 
-    bool isMultiWildStr (wstring::const_iterator strIt, wstring::const_iterator end) {
+    //----------------------------------------------------------------------------------------------
+    bool isMultiWildStr (wstring::const_iterator strIt, wstring::const_iterator end)
+    {
         // Return true if and only if the string begins with a wildcard that matches
         // multiple characters ("*" or "..." or "**").
         return (strIt != end) && ((*strIt == L'*') || isEllipsis(strIt, end));
     }
 
-    bool isMultiWildStr (const wchar_t* str) {
+    //----------------------------------------------------------------------------------------------
+    bool isMultiWildStr (const wchar_t* str)
+    {
         // Return true if and only if the string begins with a wildcard that matches
         // multiple characters ("*" or "..." or "**").
         return (str[0] == L'*') || isEllipsis(str);
     }
 
-    const wchar_t c_slash = L'/';
-    const wchar_t c_multiWild = L'\u001d';    // U+001D - GROUP SEPARATOR
-
-    bool entryIsADir (const WIN32_FIND_DATA &finddata) {
+    //----------------------------------------------------------------------------------------------
+    bool entryIsADir (const WIN32_FIND_DATA &finddata)
+    {
         // Returns true if the current directory entry is a directory.
         return 0 != (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
     }
 
-    bool isDotsDir (const wchar_t *str) {
+    //----------------------------------------------------------------------------------------------
+    bool isDotsDir (const wchar_t *str)
+    {
         // Return true if the string is either "." or ".."
         return (str[0] == L'.') && (!str[1] || ((str[1] == L'.') && !str[2]));
     }
 
-    bool isUpDir (const wstring::const_iterator strIt) {
+    //----------------------------------------------------------------------------------------------
+    bool isUpDir (const wstring::const_iterator strIt)
+    {
         // Return true if string begins with parent ("..") subpath.
         return (strIt[0] == L'.' && strIt[1] == L'.' && (!strIt[2] || isSlash(strIt[2])));
     }
+
+    //----------------------------------------------------------------------------------------------
+    void wstringReplace (std::wstring& source, const std::wstring& from, const std::wstring& to)
+    {
+        wstring newString;
+        newString.reserve(source.length());  // Avoids a few memory allocations.
+
+        wstring::size_type lastPos = 0;
+        wstring::size_type findPos;
+
+        while(wstring::npos != (findPos = source.find(from, lastPos)))
+        {
+            newString.append(source, lastPos, findPos - lastPos);
+            newString += to;
+            lastPos = findPos + from.length();
+        }
+
+        // Care for the rest after last occurrence
+        newString += source.substr(lastPos);
+
+        source.swap(newString);
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    const auto c_ellipsis    = L'\u2026';           // U+2026 - Horizontal Ellipsis
+    const auto c_ellipsisStr = wstring{c_ellipsis};
 
 
     //----------------------------------------------------------------------------------------------
@@ -138,8 +179,6 @@ namespace {
         //         Single or multiple '...' or '**' paths collapse to a single multiWild character.
         // --------
 
-        wprintf (L"Starting getGroomedPattern\n");
-
         outVec.clear();
         auto pattern = patternSource;
 
@@ -149,146 +188,51 @@ namespace {
             pattern.pop_back();
         }
 
-        return true;
-
-        #if 0
-        // Allocate the buffer needed to store the pattern.
-
-        auto desiredBufferSize = pattern.length() + 1;
-        size_t   patternBufferSize = 0;
-        unique_ptr<wchar_t[]> patternBuff;
-
-        if (desiredBufferSize > patternBufferSize) {
-            patternBuff = std::make_unique<wchar_t[]>(desiredBufferSize);
-
-            if (!patternBuff) {
-                patternBufferSize = 0;
-                return wstring(L"");
-            }
-
-            patternBufferSize = desiredBufferSize;
+        // Convert all backslashes to forward slashes.
+        for (auto strIt = pattern.begin();  strIt != pattern.end();  ++strIt) {
+            if (*strIt == L'\\')
+                *strIt = L'/';
         }
 
-        auto src  = pattern.cbegin();
-        auto dest = patternBuff.get();
-        auto pastAnyLeadingSlashes = false;
+        // Convert all ellipsis wildcards to the constant special character.
 
-        // Preserve leading multiple slashes at the beginning of the pattern.
+        wstringReplace (pattern, L"**",  wstring{c_ellipsis});
+        wstringReplace (pattern, L"...", wstring{c_ellipsis});
 
-        while (isSlash(*src))
-            *dest++ = *src++;
+        // Extract subdirectories into the 'outVec' string vector.
 
-        // Now copy the remainder of the path. Eliminate "." subpaths, reduce repeating slashes to
-        // single slashes, and resolve ".." portions.
+        wistringstream patternStream(pattern);
+        wstring subdir;
+        bool isHead = true;
+        bool priorEllipsis = false;
 
-        while (src != pattern.cend()) {
+        while (getline(patternStream, subdir, L'/')) {
 
-            pastAnyLeadingSlashes = true;
+            // If we're not the head subdirectory, then multiple slashes will yield empty
+            // subdirectory strings. Skip the resulting empty subdir strings.
+            if (isHead)
+                isHead = false;
+            else if (subdir.length() == 0)
+                continue;
 
-            if ((src[0] == L'.') && ((src[1] == 0) || isSlash(src[1]))) {
-                // The current subpath is a '.' directory.
+            // Skip '.' subdirectories.
+            if (subdir == L".")
+                continue;
 
-                auto atStart = (dest == patternBuff.get());
-
-                // Skip past any trailing slashes
-
-                do { ++ src; } while (isSlash(*src));
-
-                if (atStart) {
-                    // If the pattern is just "." or "./" (for any number of tailing slashes), then
-                    // just use "." as the pattern. If it is just prefixed with "./", then skip that
-                    // and continue.
-
-                    if (*src == 0) {
-                        *dest++ = L'.';
-                        dirsOnly = true;
-                    }
-                } else if (*src == 0) {
-                    // If the pattern ends in "." or "./" (for any number of trailing slashes), then
-                    // flag the search as directories-only and zap the prior slash.
-
-                    --dest;
-                    dirsOnly = true;
-                } else {
-                    // We've encountered a "./" in the middle of a path. In this case, just skip
-                    // the copy.
-                }
-
-            } else if (isSlash(*src)) {
-
-                while (isSlash(src[1]))   // Scan to the last slash in a series of slashes.
-                    ++src;
-
-                if (src[1] == 0) {
-                    // If the pattern ends in a slash, then record that the pattern
-                    // is matching directories only.
-                    dirsOnly = true;
-                    ++src;
-                } else {
-                    // Copy one slash only.
-                    *dest++ = c_slash;
-                    do { ++src; } while (isSlash(*src));
-                }
-
-            } else if (isUpDir(src)) {
-
-                // If we encounter a "../" in the middle of a pattern, then erase the prior parent
-                // directory if possible, otherwise append the "../" substring.
-
-                // Skip forward in the source string past all trailing slashes.
-
-                for (src+=3;  isSlash(*src);  ++src)
-                    continue;
-
-                auto destlen = dest - patternBuff.get();   // Current pattern length
-                wchar_t* parent { nullptr };       // Candidate parent portion
-
-                if ((destlen >= 2) && isSlash(dest[-1]) && !isSlash(dest[-2])) {
-                    parent = dest - 2;
-
-                    // Scan backwards to the beginning of the parent directory.
-
-                    while ((parent > patternBuff.get()) && !isSlash(*parent))
-                        --parent;
-
-                    // Move past the prior leading slash if necessary (if the parent directory isn't
-                    // the first subdirectory in the path).
-
-                    if (isSlash(*parent)) ++parent;
-
-                    // If the parent directory is already a "../", then just append the current up
-                    // directory to the last one.
-
-                    auto parentStr = wstring(parent);
-
-                    if (isUpDir(parentStr.cbegin()))
-                        parent = nullptr;
-                }
-
-                if (parent)
-                    dest = parent;
-                else {
-                    *dest++ = L'.';
-                    *dest++ = L'.';
-                    *dest++ = c_slash;
-                }
-
+            // Collapse multiple pure ellipses subdirs into a single pure ellipsis subdir.
+            // For example, "a/.../.../.../b" -> "a/.../b".
+            if (subdir != c_ellipsisStr) {
+                priorEllipsis = false;
+            } else if (!priorEllipsis) {
+                priorEllipsis = true;
             } else {
-
-                // If no special cases, then just copy up till the next slash or end of pattern.
-
-                while (src != pattern.cend() && !isSlash(*src))
-                    *dest++ = *src++;
+                continue;
             }
+                
+            outVec.push_back(subdir);
         }
 
-        if (pastAnyLeadingSlashes)
-            assert (!isSlash(dest[-1]));
-
-        *dest = 0;
-
-        return wstring(patternBuff.get());
-        #endif
+        return true;
     }
 }
 
@@ -773,7 +717,7 @@ void PathMatcher::matchDir (
 
             if (!pathend_new) continue;
 
-            *pathend_new++ = c_slash;
+            *pathend_new++ = L'/';
             *pathend_new   = 0;
 
             matchDir (pathend_new, pattern + ipatt + 1);
@@ -852,7 +796,7 @@ void PathMatcher::fetchAll (wchar_t* pathend, const wchar_t* ellipsis_prefix)
     // This function silently returns on error.
     //--------
 
-    static const wchar_t c_slashstr[] { c_slash, 0 };
+    static const wchar_t c_slashstr[] { L'/', 0 };
 
     // Append slash if needed.
 
