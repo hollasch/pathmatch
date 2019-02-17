@@ -115,7 +115,7 @@ namespace {
 
 
     //----------------------------------------------------------------------------------------------
-    bool getGroomedPattern (const wstring pattern, vector<wstring>& outVec, bool& dirsOnly)
+    bool getGroomedPattern (const wstring patternSource, vector<wstring>& outVec, bool& dirsOnly)
     {
         // This procedure parses the given pattern into a vector of patterns, using the output
         // parameters `outVec` and `dirsOnly`. The `dirsOnly` parameter indicates whether the
@@ -140,12 +140,16 @@ namespace {
 
         wprintf (L"Starting getGroomedPattern\n");
 
-        vector<wstring> patternVec;
-        patternVec.push_back(L"one");
-        patternVec.push_back(L"two");
-        patternVec.push_back(L"three");
+        outVec.clear();
+        auto pattern = patternSource;
 
-        return patternVec;
+        // Check for trailing slash to indicate directories-only pattern.
+        while (isSlash(pattern.back())) {
+            dirsOnly = true;
+            pattern.pop_back();
+        }
+
+        return true;
 
         #if 0
         // Allocate the buffer needed to store the pattern.
@@ -602,8 +606,9 @@ bool PathMatcher::match (
     // Copy the groomed pattern (see comments for CopyGroomedPattern) into the appropriate member
     // fields.
 
-    // m_pattern = getGroomedPattern(path_pattern, m_dirsOnly);
-    auto patternVec = getGroomedPattern(path_pattern, m_dirsOnly);
+    vector<wstring> patternVec;
+    if (!getGroomedPattern(path_pattern, patternVec, m_dirsOnly))
+        return false;
 
     wprintf (L"Pattern vector:\n");
     for (auto component : patternVec) {
