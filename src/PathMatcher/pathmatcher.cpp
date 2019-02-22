@@ -228,7 +228,7 @@ namespace {
             } else {
                 continue;
             }
-                
+
             outVec.push_back(subdir);
         }
 
@@ -554,9 +554,9 @@ bool PathMatcher::match (
     if (!getGroomedPattern(path_pattern, patternVec, m_dirsOnly))
         return false;
 
-    wprintf (L"Pattern vector:\n");
+    wcout << L"Pattern vector" << (m_dirsOnly ? L" (directories only):\n" : L":\n");
     for (auto component : patternVec) {
-        wprintf (L"    '%s'\n", component.c_str());
+        wcout << L"\n    (" << component << L")\n";
     }
     return false;
 

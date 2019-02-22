@@ -350,7 +350,7 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
 void printWordList (const vector<wstring> wordList)
 {
     if (wordList.empty()) {
-        wcout << "<empty>";
+        wcout << L"<empty>";
         return;
     }
 
@@ -424,7 +424,7 @@ bool mtCallback (
     // TODO: Handle absolute and relative paths (reportOpts->absolute).
     // TODO: Handle desired slash character (reportOpts->slashChar).
 
-    wcout << path.wstring() << '\n';
+    wcout << path.wstring() << L'\n';
 
     #if 0
     if (!commandParams->absolute)
@@ -459,8 +459,42 @@ bool mtCallback (
 
 
 //--------------------------------------------------------------------------------------------------
+#ifndef MS_STDLIB_BUGS
+    #if ( _MSC_VER || __MINGW32__ || __MSVCRT__ )
+        #define MS_STDLIB_BUGS 1
+    #else
+        #define MS_STDLIB_BUGS 0
+    #endif
+#endif
+
+#if MS_STDLIB_BUGS
+    #include <io.h>
+    #include <fcntl.h>
+#endif
+
+void initLocale()
+{
+    // Set up Unicode IO according to environment.
+
+    #if MS_STDLIB_BUGS
+        constexpr char cp_utf16le[] = ".1200";
+        setlocale( LC_ALL, cp_utf16le );
+        _setmode( _fileno(stdout), _O_WTEXT );
+    #else
+        // The correct locale name may vary by OS, e.g., "en_US.utf8".
+        constexpr char locale_name[] = "";
+        setlocale( LC_ALL, locale_name );
+        std::locale::global(std::locale(locale_name));
+        std::wcin.imbue(std::locale());
+        std::wcout.imbue(std::locale());
+    #endif
+}
+
+//--------------------------------------------------------------------------------------------------
 int wmain (int argc, wchar_t *argv[])
 {
+    initLocale();
+
     PathMatcher matcher;  // PathMatcher Object
 
     CommandParameters commandParams;
