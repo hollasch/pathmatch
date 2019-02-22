@@ -13,6 +13,7 @@ Change Log -- `pathmatch`
 
 ### Patch
   - Expanded usage information. Now includes future options under development.
+  - Overall modernization of the C++ code.
   - Uses new C++ std::filesystem class for portable file system access. Removed
     the prior code that used a custom filesystem proxy.
 
