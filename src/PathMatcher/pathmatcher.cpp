@@ -558,67 +558,18 @@ bool PathMatcher::match (
     for (auto component : patternVec) {
         wcout << L"\n    (" << component << L")\n";
     }
-    return false;
 
-    if (m_pattern.empty())
+    if (patternVec.empty())
         return false;
 
-    m_patternBuff = new wchar_t[m_pattern.length() + 1];
-    wcscpy_s (m_patternBuff, m_pattern.length() + 1, m_pattern.c_str());
-
-    // We will divide the path_pattern up into two parts: the root path, and the remaining pattern.
-    // For example, "C:/foo/.../bar*" would be divided up into a root of "C:/foo" and a pattern of
-    // ".../bar*".
-
-    auto rootend   = m_patternBuff;
-    auto wildstart = m_patternBuff;
-    auto ptr       = m_patternBuff;
-
-    // Locate the end of the root portion of the file pattern, and the start of the wildcard
-    // pattern.
-
-    for (; *ptr; ++ptr) {
-        if (isSlash(*ptr) || (*ptr == L':')) {
-            rootend   = ptr;
-            wildstart = ptr + 1;
-        } else if ((*ptr == L'?') || isMultiWildStr(ptr)) {
-            break;
-        }
-    }
-
-    // If the supplied pattern has no specific root directory, then just set the root directory to
-    // the current directory.
-
-    size_t rootlen;    // Length of the root path string.
-
-    if (rootend == m_patternBuff) {
-        m_path[0] = 0;
-        rootlen = 0;
-    } else {
-        ++rootend;                // Include the '/' or ':' character.
-
-        rootlen = rootend - m_patternBuff;
-
-        if (FAILED(wcsncpy_s (m_path, (mc_MaxPathLength + 1), m_patternBuff, rootlen))) {
-            delete[] m_patternBuff;
-            m_patternBuff = nullptr;
-            return false;
-        }
-    }
-
-    matchDir (m_path + rootlen, wildstart);
-
-    delete[] m_patternBuff;
-    m_patternBuff = nullptr;
+    matchDir (patternVec);
 
     return true;
 }
 
 
 //--------------------------------------------------------------------------------------------------
-void PathMatcher::matchDir (
-    wchar_t*       pathend,
-    const wchar_t* pattern)
+void PathMatcher::matchDir (vector<wstring>& patternVec)
 {
     // This procedure matches a substring pattern against a given root directory. Each matching
     // entry in the tree will yield a call back to the specified function, along with given user
@@ -628,6 +579,9 @@ void PathMatcher::matchDir (
     // 'pathend' is the end of the current path (one past the last character)
     // 'pattern is the pattern against which to match directory entries.
     //--------
+
+    wchar_t* pattern = L"dummy";  // Dummy
+    wchar_t* pathend = pattern;   // Dummy
 
     // If the pattern is null, then just return.
 
@@ -720,7 +674,7 @@ void PathMatcher::matchDir (
             *pathend_new++ = L'/';
             *pathend_new   = 0;
 
-            matchDir (pathend_new, pattern + ipatt + 1);
+            //matchDir (pathend_new, pattern + ipatt + 1);
         } else {
             // Construct full relative entry path.
 

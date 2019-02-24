@@ -98,7 +98,7 @@ class PathMatcher
 
     void handleEllipsisSubpath (wchar_t *pathEnd, const wchar_t *pattern, int iPattern);
 
-    void matchDir (wchar_t* pathend, const wchar_t* pattern);
+    void matchDir (std::vector<std::wstring>& patternVec);
     void fetchAll (wchar_t* pathend, const wchar_t* ellipsisPrefix);
 
     wchar_t* appendPath (wchar_t *pathEnd, const wchar_t *str);
