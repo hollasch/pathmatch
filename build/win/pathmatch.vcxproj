@@ -93,9 +93,11 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\..\src\pathmatchlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\..\src\pathmatcher\pathmatcher.cpp" />
+    <ClCompile Include="..\..\src\WildComp\wildcomp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\pathmatcher\pathmatcher.h" />
+    <ClInclude Include="..\..\src\WildComp\wildcomp.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\CHANGELOG.md" />
