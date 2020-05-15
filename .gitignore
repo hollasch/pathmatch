@@ -1,13 +1,4 @@
 # Git Ignore File for 'pathmatch' Project
 
-# Generated Files
-
+/build/
 /out/
-
-# Visual Studio Files
-
-.vs/
-*.opensdf
-*.sdf
-*.suo
-*.vcxproj.user

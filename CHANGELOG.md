@@ -16,6 +16,7 @@ Change Log -- `pathmatch`
   - Overall modernization of the C++ code.
   - Uses new C++ std::filesystem class for portable file system access. Removed
     the prior code that used a custom filesystem proxy.
+  - Converted project to use CMake
 
 
 0.1.1  (2017-10-08)
