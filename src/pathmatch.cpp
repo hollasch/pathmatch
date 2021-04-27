@@ -5,7 +5,7 @@
 // string below for a description of its behavior.
 //
 // _________________________________________________________________________________________________
-// Copyright 2010-2019 Steve Hollasch
+// Copyright 2010-2021 Steve Hollasch
 //
 // MIT License
 //
@@ -45,17 +45,13 @@ using std::wcerr;
 
 namespace { // File-local Variables & Parameters
 
-const wstring version = L"0.2.1";
+const wstring versionString = L"pathmatch 0.2.2 | 2021-04-27 | https://github.com/hollasch/pathmatch";
 
     // Usage Information
 
-const wstring helpHeader {
-    L"pathmatch  v" + version + L"  https://github.com/hollasch/pathmatch/"
-};
-
-const wstring usage =
-LR"(pathmatch: Report files and directories matching the specified pattern
-Usage: pathmatch [<options>] <pattern> ... <pattern>
+const wstring usageString = LR"(
+pathmatch: Report files and directories matching the specified pattern
+usage    : pathmatch [<options>] <pattern> ... <pattern>
 
     `pathmatch` finds and reports all files and directories matching wildcard
     patterns. These patterns may contain the special characters '?', '*', and
@@ -89,6 +85,7 @@ Command Options:
 
     --preview
         Print preview of planned command options.
+
 )";
 
 const wstring usagePreview =
@@ -507,7 +504,7 @@ int wmain (int argc, wchar_t *argv[])
     }
 
     if (commandParams.printHelp) {
-        wcout << helpHeader << L'\n' << usage;
+        wcout << usageString << versionString << L'\n';
         exit(0);
     }
 
@@ -517,7 +514,7 @@ int wmain (int argc, wchar_t *argv[])
     }
 
     if (commandParams.printVersion) {
-        wcout << helpHeader << L'\n';
+        wcout << versionString << L'\n';
         exit(0);
     }
 
