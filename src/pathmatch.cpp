@@ -45,7 +45,7 @@ using std::wcerr;
 
 namespace { // File-local Variables & Parameters
 
-const wstring versionString = L"pathmatch 0.2.2 | 2021-04-27 | https://github.com/hollasch/pathmatch";
+const wstring versionString = L"pathmatch 1.0.0-alpha.100 | 2021-05-27 | https://github.com/hollasch/pathmatch";
 
     // Usage Information
 
