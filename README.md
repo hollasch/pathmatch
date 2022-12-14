@@ -3,6 +3,11 @@ pathmatch
 
 A directory/filename pattern match utility for the Windows command line.
 
+(*NOTE*: This project is in a bit of a mess right now, as I've been modifying a bunch of code and
+then put everything on the backburner for several years. It's actually the topmost project I keep
+meaning to dive back into and finish for the next release, but no idea when that will actually
+happen. Just writing this down because I noticed some new forks of this codebase.)
+
 
 Description
 ------------
