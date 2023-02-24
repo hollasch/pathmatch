@@ -6,9 +6,8 @@
 // (including the special operators '?', '*', and '...' to locate and report matching directory
 // entries in a subdirectory tree.
 //
-// _________________________________________________________________________________________________
-// Copyright 2010-2019 Steve Hollasch
-//
+//                                                                Copyright 2010-2023 Steve Hollasch
+//==================================================================================================
 // MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,17 +38,9 @@
 namespace PathMatch
 {
 
-// Standalone Function Declarations
-
-// Wildcard comparison test, case sensitive.
-bool wildComp (const std::wstring& pattern, const std::wstring& str);
-bool wildComp (std::wstring::const_iterator patternStart, std::wstring::const_iterator patternEnd,
-               std::wstring::const_iterator strStart,     std::wstring::const_iterator strEnd);
-
 // Path matching test, with ellipses or double asterisk (directory-spanning path portion), asterisk
 // (substring of directory or file name), and question mark (matches any single character).
 bool pathMatch (const wchar_t *pattern, const wchar_t *path);
-
 
 
 class PathMatcher

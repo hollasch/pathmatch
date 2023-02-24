@@ -3,9 +3,8 @@
 //
 // Routines for matching wildcard path specifications against a given directory tree.
 //
-// _________________________________________________________________________________________________
-// Copyright 2010-2019 Steve Hollasch
-//
+//                                                                Copyright 2010-2023 Steve Hollasch
+//==================================================================================================
 // MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +27,8 @@
 //==================================================================================================
 
 #include "pathmatcher.h"
+
+#include "wildcomp.h"
 
 #include <assert.h>
 #include <io.h>
@@ -243,92 +244,10 @@ namespace {
 
 namespace PathMatch {
 
-
 // =================================================================================================
 // Standalone PathMatch Functions
 // =================================================================================================
 
-bool wildComp (const wstring& pattern, const wstring& str) {
-    // Performs a case-sensitive comparison of the string pattern against the string str.
-    // See below for further details.
-
-    return wildComp (pattern.cbegin(), pattern.cend(), str.cbegin(), str.cend());
-}
-
-
-//--------------------------------------------------------------------------------------------------
-bool wildComp (
-    std::wstring::const_iterator patternIt,
-    std::wstring::const_iterator patternEnd,
-    std::wstring::const_iterator strIt,
-    std::wstring::const_iterator strEnd)
-{
-    // Compares a pattern against a string (case sensitive) to determine if the two match. In the
-    // pattern string, the character '?' denotes any single character, and the character '*' denotes
-    // any number of characters. All other characters are interpreted literally, though they are
-    // compared without regard to case (for exampmle, 'a' matches 'A'). For case-insensitive
-    // matches, ensure that the pattern and string are both lowercase first.
-    //
-    // Parameters
-    //     patternIt  - Iterator over the const pattern to compare with the string
-    //     patternEnd - The end of the const pattern string
-    //     strIt      - Iterator over the const string to test for matching
-    //     strIt      - The end of the const string to test for matching
-    //
-    // Returns
-    //     True if and only if the pattern matches the string. This function returns false if either
-    //     the pattern or the string are null pointers.
-    //--------
-
-    // Scan through the single character matches.
-
-    while ((patternIt != patternEnd) && (strIt != strEnd)) {
-        if (*patternIt == L'*')  // If we've hit an asterisk, then drop down to the section below.
-            break;
-
-        // Stop testing on mismatch.
-
-        if ((*patternIt != L'?') && *patternIt != *strIt)
-            break;
-
-        ++ patternIt;   // On a successful match, increment the pattern and the string and continue.
-        ++ strIt;
-    }
-
-    // Unless we stopped on an asterisk, we're done matching. The only valid way to match at this
-    // point is if both the pattern and the string are exhausted.
-
-    if (*patternIt != L'*')
-        return (patternIt == patternEnd) && (strIt == strEnd);
-
-    // Advance past the asterisk. Handle pathological cases where there is more than one asterisk
-    // in a row.
-
-    while (*patternIt == L'*')
-        ++patternIt;
-
-    // If the asterisk is the last character of the pattern, then we match any remainder,
-    // so return true.
-
-    if (patternIt == patternEnd)
-        return true;
-
-    // We're at an asterisk with other patterns following, so recursively eat away at the string
-    // until we match or exhaust the string.
-
-    while (true) {
-        if (wildComp (patternIt, patternEnd, strIt, strEnd))
-            return true;
-
-        if (strIt == strEnd)
-            return false;
-
-        ++ strIt;
-    }
-}
-
-
-//--------------------------------------------------------------------------------------------------
 bool pathMatch (const wchar_t *pattern, const wchar_t *path)
 {
     // Compares a single path against a VMS-style wildcard specification. In the pattern string, the
