@@ -140,13 +140,13 @@ inline bool equal (const wchar_t* a, const wchar_t* b) {
 
 
 //--------------------------------------------------------------------------------------------------
-bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[])
+bool parseArguments (CommandParameters& params, int argc, wchar_t *argv[])
 {
     // Parse arguments from the command line and set the given CommandParameters structure with the
     // resulting values. This function returns true if no errors were encountered, otherwise false.
 
     if (argc <= 1) {
-        commandParams.printHelp = true;
+        params.printHelp = true;
         return true;
     }
 
@@ -160,13 +160,13 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
         // we treat it as a request for tool information by convention (if it's the first argument).
 
         if (equal(arg, L"/?")) {
-            commandParams.printHelp = true;
+            params.printHelp = true;
             return true;
         }
 
         if (arg[0] != L'-') {
 
-            commandParams.patterns.push_back (argv[argi]);
+            params.patterns.push_back (argv[argi]);
 
             // Patterns
 
@@ -178,15 +178,15 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
 
                 switch (arg[1]) {
                     case L'h': case L'H': case L'?': {
-                        commandParams.printHelp = true;
+                        params.printHelp = true;
                         return true;
                     }
 
-                    case L'a': { commandParams.absolute = true;     break; }
-                    case L'd': { commandParams.dirSlash = true;     break; }
-                    case L'D': { commandParams.debug = true;        break; }
-                    case L'f': { commandParams.filesOnly = true;    break; }
-                    case L'v': { commandParams.printVersion = true; return true; }
+                    case L'a': { params.absolute = true;     break; }
+                    case L'd': { params.dirSlash = true;     break; }
+                    case L'D': { params.debug = true;        break; }
+                    case L'f': { params.filesOnly = true;    break; }
+                    case L'v': { params.printVersion = true; return true; }
 
                     case L'l': { // Limit option
                         auto limitString = arg+2;
@@ -197,7 +197,7 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                             }
                             limitString = argv[argi];
                         }
-                        commandParams.limit = std::max(0, _wtoi(limitString));
+                        params.limit = std::max(0, _wtoi(limitString));
                         break;
                     }
 
@@ -223,7 +223,7 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                             return false;
                         }
 
-                        commandParams.slashChar = slashChar;
+                        params.slashChar = slashChar;
                         break;
                     }
                 }
@@ -234,16 +234,16 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
 
                 // Double dash word options
                 if (equal(optionWord, L"absolute")) {
-                    commandParams.absolute = true;
+                    params.absolute = true;
 
                 } else if (equal(optionWord, L"debug")) {
-                    commandParams.debug = true;
+                    params.debug = true;
 
                 } else if (equal(optionWord, L"dirSlash")) {
-                    commandParams.dirSlash = true;
+                    params.dirSlash = true;
 
                 } else if (equal(optionWord, L"files")) {
-                    commandParams.filesOnly = true;
+                    params.filesOnly = true;
 
                 } else if (equal(optionWord, L"stream")) {
                     if (++argi >= argc) {
@@ -251,10 +251,10 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                         return false;
                     }
                     if (!equal(argv[argi], L"(")) {
-                        commandParams.streamSources.push_back(argv[argi]);
+                        params.streamSources.push_back(argv[argi]);
                     } else {
                         for (++argi;  argi < argc && !equal(argv[argi],L")");  ++argi) {
-                            commandParams.streamSources.push_back(argv[argi]);
+                            params.streamSources.push_back(argv[argi]);
                         }
                     }
 
@@ -263,7 +263,7 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                         wcerr << L"pathmatch: missing argument for '--limit' option.\n";
                         return false;
                     }
-                    commandParams.limit = std::max(0, _wtoi(argv[argi]));
+                    params.limit = std::max(0, _wtoi(argv[argi]));
 
                 } else if (equal(optionWord, L"ignore")) {
                     if (++argi >= argc) {
@@ -271,15 +271,15 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                         return false;
                     }
                     if (!equal(argv[argi], L"(")) {
-                        commandParams.ignoreFiles.push_back(argv[argi]);
+                        params.ignoreFiles.push_back(argv[argi]);
                     } else {
                         for (++argi;  argi < argc && !equal(argv[argi],L")");  ++argi) {
-                            commandParams.ignoreFiles.push_back(argv[argi]);
+                            params.ignoreFiles.push_back(argv[argi]);
                         }
                     }
 
                 } else if (equal(optionWord, L"help")) {
-                    commandParams.printHelp = true;
+                    params.printHelp = true;
                     return true;
 
                 } else if (equal(optionWord, L"slash")) {
@@ -298,10 +298,10 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                               << slashChar << L".\n";
                         return false;
                     }
-                    commandParams.slashChar = argv[argi][0];
+                    params.slashChar = argv[argi][0];
 
                 } else if (equal(optionWord, L"version")) {
-                    commandParams.printVersion = true;
+                    params.printVersion = true;
                     return true;
 
                 } else {
@@ -379,15 +379,15 @@ bool mtCallback (
 
     // Get the properly typed report options structure from the callback data.
 
-    auto commandParams = static_cast<const CommandParameters*>(cbdata);
+    auto params = static_cast<const CommandParameters*>(cbdata);
 
-    auto absolute = new wchar_t [commandParams->maxPathLength + 1];  // Optional Full Path
+    auto absolute = new wchar_t [params->maxPathLength + 1];  // Optional Full Path
     auto item = path;       // Pointer to Matching Entry
 
     // If we are to report only files and this entry is a directory, then return without reporting.
 
     auto isDirectory = fs::is_directory(path);
-    if (commandParams->filesOnly && isDirectory)
+    if (params->filesOnly && isDirectory)
         return true;
 
     // TODO: Handle absolute and relative paths (reportOpts->absolute).
@@ -396,14 +396,14 @@ bool mtCallback (
     wcout << path.wstring() << L'\n';
 
     #if 0
-    if (!commandParams->absolute)
+    if (!params->absolute)
         item = path;
     else
     { // If we are to convert the default relative path to a full path, use the stdlib _fullpath
         // function to do so. If this is not possible, then emit an error message and halt matching
         // entry enumeration.
 
-        if (!_wfullpath(absolute, entry, commandParams->maxPathLength))
+        if (!_wfullpath(absolute, entry, params->maxPathLength))
         {
             wcerr << L"pathmatch: Unable to convert \""
                   << entry
@@ -418,7 +418,7 @@ bool mtCallback (
 
     for (const wchar_t *ptr = item;  *ptr;  ++ptr)
     for (auto wchar_t : item
-        wcout << (isSlash(*ptr) ? commandParams->slashChar : *ptr);
+        wcout << (isSlash(*ptr) ? params->slashChar : *ptr);
 
     wcout << L'\n';
     #endif
@@ -466,27 +466,27 @@ int wmain (int argc, wchar_t *argv[])
 
     PathMatcher matcher;  // PathMatcher Object
 
-    CommandParameters commandParams;
+    CommandParameters params;
 
-    if (!parseArguments(commandParams, argc, argv))
+    if (!parseArguments(params, argc, argv))
         exit(1);
 
-    if (commandParams.debug) {
-        printParameters(commandParams);
+    if (params.debug) {
+        printParameters(params);
     }
 
-    if (commandParams.printHelp) {
+    if (params.printHelp) {
         wcout << usageString << versionString << L'\n';
         exit(0);
     }
 
-    if (commandParams.printVersion) {
+    if (params.printVersion) {
         wcout << versionString << L'\n';
         exit(0);
     }
 
-    for (auto pattern: commandParams.patterns) {
-        matcher.match (pattern, &mtCallback, &commandParams);
+    for (auto pattern: params.patterns) {
+        matcher.match (pattern, &mtCallback, &params);
     }
 
     exit (0);
