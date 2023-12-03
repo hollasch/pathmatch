@@ -44,7 +44,7 @@ using std::wcerr;
 
 namespace { // File-local Variables & Parameters
 
-const wstring versionString = L"pathmatch 1.0.0-alpha.100 | 2021-05-27 | https://github.com/hollasch/pathmatch";
+const wstring versionString = L"pathmatch 1.0.0-alpha.101 | 2023-12-02 | https://github.com/hollasch/pathmatch";
 
     // Usage Information
 
@@ -67,6 +67,12 @@ Command Options:
         Report absolute paths. By default, reported paths are relative to the
         current working directory.
 
+    --debug, -D
+        Turn on debugging output.
+
+    --dirSlash, -d
+        Print trailing slash for directory matches.
+
     --files, -f
         Report files only (no directories). To report directories only, append
         a slash to the pattern.
@@ -74,44 +80,19 @@ Command Options:
     --help, /?, -?, -h
         Print help information.
 
-    --slash [/|\], -s[/|\]
-        Specifies the slash direction to be reported. By default, slashes will
-        be back slashes. Use "-s/" to report paths with forward slashes, "-s\"
-        to report backslashes. A space is allowed before the slash.
-
-    --version, -v
-        Print version information.
-
-    --preview
-        Print preview of planned command options.
-
-)";
-
-const wstring usagePreview =
-LR"(Preview of Planned Options:
-
-    File Patterns
-        - The pattern '**' is a synonym for '...'.
-        - The pattern '{a,b,c}' matches 'a', or 'b', or 'c'. Subparts may
-          themselves be patterns.
-
-    --breadthFirst
-        Print results in breadth-first fashion (shallow entries before deep
-        ones). By default, results are printed depth-first (all entries under
-        one directory before proceeding to the next one).
-
-    --debug, -D
-        Turn on debugging output.
+    --ignore <fileName>|( <file1> <file2> ... <fileN> )
+        Suppress output of files and directories that match rules inside a file
+        of patterns. The special filename '--' reads from standard input, and
+        may be specified for a single option only. The multiple file option
+        requires space-separated '(' and ')' delimiters
 
     --limit <count>, -l<count>
         Limit output to the first <count> matches.
 
-    --maxDepth <depth>, -m<depth>
-        Limit the descent depth to <depth> levels. Level 0 is files in current
-        directory only, level 1 is entries of each subdirectory, and so on.
-
-    --dirSlash, -d
-        Print trailing slash for directory matches.
+    --slash [/|\], -s[/|\]
+        Specifies the slash direction to be reported. By default, slashes will
+        be back slashes. Use "-s/" to report paths with forward slashes, "-s\"
+        to report backslashes. A space is allowed before the slash.
 
     --stream <fileName>|( <file1> <file2> ... <fileN> )
         Apply patterns against input stream of filenames. The special filename
@@ -119,11 +100,9 @@ LR"(Preview of Planned Options:
         single option only. The multiple file option requires space-separated
         '(' and ')' delimiters.
 
-    --ignore <fileName>|( <file1> <file2> ... <fileN> )
-        Suppress output of files and directories that match rules inside a file
-        of patterns. The special filename '--' reads from standard input, and
-        may be specified for a single option only. The multiple file option
-        requires space-separated '(' and ')' delimiters
+    --version, -v
+        Print version information.
+
 )";
 
 struct CommandParameters
@@ -131,7 +110,6 @@ struct CommandParameters
     // The CommandParameters structure holds the options for use by the callback routine.
 
     bool printHelp {false};        // Print help and exit.
-    bool printPreview {false};     // Print preview help and exit.
     bool printVersion {false};     // Print version information and exit.
 
     bool debug {false};            // Print debug information
@@ -304,10 +282,6 @@ bool parseArguments (CommandParameters& commandParams, int argc, wchar_t *argv[]
                     commandParams.printHelp = true;
                     return true;
 
-                } else if (equal(optionWord, L"preview")) {
-                    commandParams.printPreview = true;
-                    return true;
-
                 } else if (equal(optionWord, L"slash")) {
                     if (++argi >= argc) {
                         wcerr << L"pathmatch: missing argument for '--slash' option.\n";
@@ -370,7 +344,6 @@ void printParameters (const CommandParameters& params)
 
     wcout << L"Command Parameters:\n";
     wcout << L"       printHelp: " << boolValue(params.printHelp);
-    wcout << L"    printPreview: " << boolValue(params.printPreview);
     wcout << L"    printVersion: " << boolValue(params.printVersion);
     wcout << L"           debug: " << boolValue(params.debug);
     wcout << L"        dirSlash: " << boolValue(params.dirSlash);
@@ -504,11 +477,6 @@ int wmain (int argc, wchar_t *argv[])
 
     if (commandParams.printHelp) {
         wcout << usageString << versionString << L'\n';
-        exit(0);
-    }
-
-    if (commandParams.printPreview) {
-        wcout << usagePreview;
         exit(0);
     }
 
