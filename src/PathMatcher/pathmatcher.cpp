@@ -122,10 +122,13 @@ namespace {
     }
 
     //----------------------------------------------------------------------------------------------
-    bool isUpDir (const wstring::const_iterator strIt)
+    bool isUpDir (const wstring::const_iterator strIt, const wstring::const_iterator strEnd)
     {
+        if (strIt == strEnd || (strIt+1) == strEnd)
+            return false;
+
         // Return true if string begins with parent ("..") subpath.
-        return (strIt[0] == L'.' && strIt[1] == L'.' && (!strIt[2] || isSlash(strIt[2])));
+        return (strIt[0] == L'.' && strIt[1] == L'.' && ((strIt+2) != strEnd || isSlash(strIt[2])));
     }
 
     //----------------------------------------------------------------------------------------------
@@ -157,50 +160,90 @@ namespace {
 
 
     //----------------------------------------------------------------------------------------------
-    bool getGroomedPattern (const wstring patternSource, vector<wstring>& outVec, bool& dirsOnly)
+    vector<wstring> getNormalizedPattern (const wstring patternSource)
     {
-        // This procedure parses the given pattern into a vector of patterns, using the output
-        // parameters `outVec` and `dirsOnly`. The `dirsOnly` parameter indicates whether the
-        // pattern specifies directories only (that is, ends in a directory separator).
+        // This procedure parses the given path pattern into a vector of normalized sub-path
+        // patterns. To perform this, it splits the string into components separated by slashes, and
+        // performs the transformations below.
         //
-        // To perform this, it splits the string into components separated by slashes, then performs
-        // the transformations below.
+        //     Multiple leading slashes are illegal. A single leading slash is allowed. In such a
+        //     case, the slash will be the first element in the sub-path pattern list.
+        //
+        //     Both ellipsis forms ('...' and '**') are normalized to the canonical Unicode ellipsis
+        //     character.
+        //
+        //     /pattern... -> '/', <pattern>...
+        //         Leading (root) slashes are preserved as a special first element.
         //
         //     a/./b -> 'a', 'b'
         //         Simple '.' subdirectories are removed.
         //
         //     a////b -> 'a', 'b'
-        //         Any number of slashes collapse to a single slash.
+        //         Any number of intermediate slashes collapse to a single slash.
         //
         //     /a/b/c/../../foo -> 'a', 'foo'
-        //         Paths are collapse _before_ matching. In this example, the subdirectories b/c/
+        //         Paths are collapsed _before_ matching. In this example, the subdirectories b/c/
         //         don't need to actually exist under /a.
         //
-        //     a/.../**/.../b -> 'a', <m>, 'b'
+        //     a/.../.../.../b -> 'a', ..., 'b'
         //         Single or multiple '...' or '**' paths collapse to a single multiWild character.
+        //
+        //     /a.../      -> a*/.../
+        //     /...b/      -> /.../*b
+        //     /a...b/     -> a*/.../*b
+        //     /a...b...c/ -> a*/.../*b*/.../*c
+        //         If ellipses are prefixed or suffixed with patterns, these are separated out to
+        //         isolate each ellipsis pattern into its own sub-path.
         // --------
 
-        outVec.clear();
-        auto pattern = patternSource;
+        vector<wstring> patterns;
 
-        // Check for trailing slash to indicate directories-only pattern.
-        while (isSlash(pattern.back())) {
-            dirsOnly = true;
-            pattern.pop_back();
+        patterns.clear();
+        auto pattern = patternSource.cbegin();
+
+        // Check for a leading slash.
+        if (isSlash(*pattern)) {
+
+            patterns.push_back(L"/");
+            ++pattern;
+
+            // Check for pattern of a single slash.
+            if (pattern == patternSource.cend())
+                return patterns;
+
+            // Multiple leading slashes are illegal.
+            if (isSlash(*pattern)) {
+                return {};
+
         }
 
-        // Convert all backslashes to forward slashes.
-        for (auto strIt = pattern.begin();  strIt != pattern.end();  ++strIt) {
-            if (*strIt == L'\\')
-                *strIt = L'/';
-        }
-
+#if 0
         // Convert all ellipsis wildcards to the constant special character.
-
         wstringReplace (pattern, L"**",  wstring{c_ellipsis});
         wstringReplace (pattern, L"...", wstring{c_ellipsis});
 
-        // Extract subdirectories into the 'outVec' string vector.
+        // Handle leading up-dir sub-paths.
+        while (isUpDir(pattern.cbegin())) {
+            patterns.push_back(L"..");
+            if (pattern[2] == L'/')
+                pattern.erase(0, 3);
+            else
+                pattern.erase(0, 2);
+        }
+#endif
+        while (pattern != patternSource.cend()) {
+            auto patternStart = pattern;
+            while (pattern != patternSource.cend() && !isSlash(*pattern))
+                ++pattern;
+            
+            patterns.push_back({patternStart, pattern});
+
+            if (pattern != patternSource.cend())
+                ++pattern;
+        }
+
+#if 0
+        // Extract subdirectories into the 'patterns' string vector.
 
         wistringstream patternStream(pattern);
         wstring subdir;
@@ -220,6 +263,13 @@ namespace {
             if (subdir == L".")
                 continue;
 
+            // Pre-collapse internal '..' subpaths.
+            if (subdir == L"..") {
+                if (patterns.size() > 0)
+                    patterns.pop_back();
+                continue;
+            }
+
             // Collapse multiple pure ellipses subdirs into a single pure ellipsis subdir.
             // For example, "a/.../.../.../b" -> "a/.../b".
             if (subdir != c_ellipsisStr) {
@@ -230,10 +280,13 @@ namespace {
                 continue;
             }
 
-            outVec.push_back(subdir);
+            patterns.push_back(subdir);
         }
 
         return true;
+#endif
+
+        return patterns;
     }
 }
 
@@ -465,17 +518,17 @@ bool PathMatcher::match (
 
     m_callback = callback_func;
     m_callbackData = userdata;
+    m_dirsOnly = isSlash(path_pattern.back());
 
-    // Copy the groomed pattern (see comments for CopyGroomedPattern) into the appropriate member
-    // fields.
+    // Groom the full pattern and split it into sub-directory patterns.
 
-    vector<wstring> patternVec;
-    if (!getGroomedPattern(path_pattern, patternVec, m_dirsOnly))
+    auto patternVec = getNormalizedPattern(path_pattern);
+    if (patternVec.empty())
         return false;
 
-    wcout << L"Pattern vector" << (m_dirsOnly ? L" (directories only):\n" : L":\n");
+    wcout << L"Normalized directory pattern components" << (m_dirsOnly ? L" (directories only):\n" : L":\n");
     for (auto component : patternVec) {
-        wcout << L"\n    (" << component << L")\n";
+        wcout << L"  (" << component << L")\n";
     }
 
     if (patternVec.empty())
