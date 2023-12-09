@@ -100,4 +100,11 @@ class PathMatcher
 }; // Namespace PathMatch
 
 
+// Interfaces for Unit Testing
+namespace PathMatchTest
+{
+    std::vector<std::wstring> testGetNormalizedPattern(const std::wstring& inputPattern);
+}
+
+
 #endif  // _INCLUDED_PATHMATCHER_H
