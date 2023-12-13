@@ -189,14 +189,6 @@ namespace {
         //
         //     a/......****.../b -> 'a', ..., 'b'
         //         Sequences of adjacent multiWild patterns collapse to a single multiWild pattern.
-        //
-        //     /a.../      -> a*/.../
-        //     /...b/      -> /.../*b
-        //     /a...b/     -> a*/.../*b
-        //     /a...b...c/ -> a*/.../*b*/.../*c
-        //         If ellipses are prefixed or suffixed with patterns, these are separated out to
-        //         isolate each ellipsis pattern into its own sub-path.
-        // --------
 
         if (patternSource.empty())
             return {};
@@ -279,35 +271,7 @@ namespace {
             }
         }
 
-        // Isolate multiwild patterns.
-        vector<wstring> finalPatterns;
-
-        for (auto& pattern : patterns) {
-            while (true) {
-                auto ellipsisPos = pattern.find(c_ellipsis);
-                if (ellipsisPos == wstring::npos)
-                    break;
-
-                auto prefix = pattern.substr(0, ellipsisPos);
-                if (!prefix.empty()) {
-                    if (prefix.back() != L'*')
-                        prefix += L'*';
-                    finalPatterns.push_back(prefix);
-                }
-
-                finalPatterns.push_back(c_ellipsisStr);
-
-                pattern.erase(0, ellipsisPos+1);
-
-                if (!pattern.empty() && pattern.front() != L'*')
-                    pattern.insert(0, L"*");
-            }
-
-            if (!pattern.empty())
-                finalPatterns.push_back(pattern);
-        }
-
-        return finalPatterns;
+        return patterns;
     }
 }
 
