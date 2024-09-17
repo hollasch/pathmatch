@@ -6,6 +6,8 @@ REM ----------------------------------------------------------------------------
 REM ------------------------------------------------------------------------------------------------
 REM // Run Tests
 
+chcp 65001
+
 cd /d %~p0
 set testDir=%cd%
 set testOutdir=..\out\tests
@@ -14,16 +16,15 @@ rmdir /s /q %testOutDir%
 mkdir >nul 2>&1 %testOutDir%
 
 if /i "%~1" equ "debug" (
-    pushd ..\out\Debug
-        path !cd!;!path!
-    popd
     echo Testing Debug
+    pushd ..\build\Debug
 ) else (
-    pushd ..\out\Release
-        path !cd!;!path!
-    popd
     echo Testing Release
+    pushd ..\build\Release
 )
+
+set pathmatch=!cd!\pathmatch.exe
+popd
 
 if not defined DIFF set DIFF=diff
 
@@ -60,17 +61,27 @@ exit /b 1
 REM ------------------------------------------------------------------------------------------------
 :runTest
     set testName=%~n1
-    set testCommand=
+    set testArgs=
     for /f "delims=" %%c in (%1) do (
-        set testCommand=%%c
+        set testArgs=%%c
         goto :break
     )
     :break
 
+    echo.
+    echo --------------------------------------------------------------------------------
+    echo %testName%
+    echo pathmatch %testArgs%
+    echo.
+
     set testOutput=%testOutDir%\%testName%.out
-    echo %testCommand%|eol \n > %testOutput%
-    echo.|eol \n >>%testOutput%
-    %testCommand% |eol \n >>%testOutput%
+    echo>%testOutput% %testArgs%
+    echo.>>%testOutput%
+    %pathmatch% %testArgs%>>%testOutput%
+
+    move >nul %testOutput% %testOutput%.original
+    eol \n <%testOutput%.original >%testOutput%
+    del %testOutput%.original
 
     fc >nul 2>&1 %testName%.gold %testOutput%
     if %ErrorLevel% neq 0 goto :fail
@@ -84,7 +95,7 @@ REM ----------------------------------------------------------------------------
         set action=n
         set /p action="       [n]ext, [d]iff, [a]ccept, [q]uit? (default is next) "
         if /i "!action!" equ "d" (
-            call %DIFF% %testName%.gold %testOutput%
+            call "%DIFF%" %testName%.gold %testOutput%
             goto :query
         ) else if /i "!action!" equ "a" (
             copy >nul /y %testOutput% %testName%.gold

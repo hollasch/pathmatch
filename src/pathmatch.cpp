@@ -446,9 +446,16 @@ void initLocale()
     // Set up Unicode IO according to environment.
 
     #if MS_STDLIB_BUGS
-        constexpr char cp_utf16le[] = ".1200";
-        setlocale( LC_ALL, cp_utf16le );
-        _setmode( _fileno(stdout), _O_WTEXT );
+        // UTF-16LE No-BOM
+        // constexpr char cp_utf16le[] = ".1200";
+        // setlocale( LC_ALL, cp_utf16le );
+        // _setmode( _fileno(stdout), _O_WTEXT );
+
+        // UTF-8
+        constexpr char cp_utf8[] = ".65001";
+        setlocale(LC_ALL, cp_utf8);
+        _setmode(_fileno(stdout), _O_U8TEXT);
+
     #else
         // The correct locale name may vary by OS, e.g., "en_US.utf8".
         constexpr char locale_name[] = "";

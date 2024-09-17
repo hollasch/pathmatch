@@ -1,8 +1,7 @@
-pathmatch --debug
+--debug
 
 Command Parameters:
        printHelp: false
-    printPreview: false
     printVersion: false
            debug: true
         dirSlash: false
