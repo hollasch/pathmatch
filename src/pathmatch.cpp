@@ -4,7 +4,7 @@
 // This program returns all files and directories matching the specified pattern. See the usage
 // string below for a description of its behavior.
 //
-//                                                                Copyright 2010-2023 Steve Hollasch
+//                                                                Copyright 2010-2024 Steve Hollasch
 //==================================================================================================
 // MIT License
 //
