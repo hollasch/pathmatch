@@ -11,23 +11,24 @@ chcp 65001
 cd /d %~p0
 set testDir=%cd%
 set testOutdir=..\out\tests
+set releaseBuild=1
 
 rmdir /s /q %testOutDir%
 mkdir >nul 2>&1 %testOutDir%
 
-if /i "%~1" equ "debug" (
-    echo Testing Debug
-    pushd ..\build\Debug
-) else (
+cd ..
+if %releaseBuild% equ 1 (
     echo Testing Release
-    pushd ..\build\Release
+    set pathmatch=!cd!\build\Release\pathmatch.exe
+    call cmake --build build --config release
+) else (
+    echo Testing Debug
+    set pathmatch=!cd!\build\Debug\pathmatch.exe
+    call cmake --build build --config debug
 )
-
-set pathmatch=!cd!\pathmatch.exe
-popd
+cd test
 
 if not defined DIFF set DIFF=diff
-
 
 set passCount=0
 set testCount=0
