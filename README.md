@@ -1,5 +1,5 @@
 pathmatch
-================================================================================
+====================================================================================================
 
 A directory/filename pattern match utility for the Windows command line.
 
@@ -11,9 +11,8 @@ happen. Just writing this down because I noticed some new forks of this codebase
 
 Description
 ------------
-`pathmatch` is a tool to match files and directories against a path pattern that
-supports `?`, `*`, and `...` wildcards. These wildcards match the following
-patterns:
+`pathmatch` is a tool to match files and directories against a path pattern that supports `?`, `*`,
+and `...` wildcards. These wildcards match the following patterns:
 
 | Token | Description
 |:-----:|:---------------------------------------------------------
@@ -33,13 +32,12 @@ Examples
   Matches "ac", "abc" and "azzzzzzzc". Does not match "a/c".
 
 #### `foo...bar`
-  Matches "foobar", "fooxbar", and "fooz/blaz/rebar". Does not match "fo/obar",
-  "fobar" or "food/bark".
+  Matches "foobar", "fooxbar", and "fooz/blaz/rebar". Does not match "fo/obar", "fobar" or
+  "food/bark".
 
 #### `pathmatch ....obj`
-  Matches all files anywhere in the current hierarchy that end in ".obj". Note
-  that the first three periods are interpreted as "...", and the fourth one is
-  interpreted as a literal "." character.
+  Matches all files anywhere in the current hierarchy that end in ".obj". Note that the first three
+  periods are interpreted as "...", and the fourth one is interpreted as a literal "." character.
 
 
 Help Output
@@ -85,23 +83,22 @@ Command Options:
 
 
 Building
-----------
-This project uses the CMake build tool. CMake is a meta-build system that
-locates and uses your local development tools to build the project if possible.
+---------
+This project uses the CMake build tool. CMake is a meta-build system that locates and uses your
+local development tools to build the project if possible.
 
-To build, first install [CMake][https://cmake.org/]. Then go to the project root
-directory and run the following command:
+To build, first install [CMake][]. Then go to the project root directory and run the following
+command:
 
     cmake -B build
 
-This will locate your installed development tools and configure your project
-build in the `build/` directory. After that, whenever you want a new build, run
-this command:
+This will locate your installed development tools and configure your project build in the `build/`
+directory. After that, whenever you want a new build, run this command:
 
     cmake --build build
 
-This will build a debug version of the project, located in `build/Debug/`. To
-build a release version, run
+This will build a debug version of the project, located in `build/Debug/`. To build a release
+version, run
 
     cmake --build build --config release
 
@@ -109,5 +106,8 @@ You can find the built release executable in `build/Release/`.
 
 
 ----
-Steve Hollasch <steve@hollasch.net>
-https://github.com/hollasch/pathmatch
+Steve Hollasch  /  steve@hollasch.net  /  https://github.com/hollasch/pathmatch
+
+
+
+[CMake]: https://cmake.org/
