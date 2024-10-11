@@ -105,6 +105,24 @@ version, run
 You can find the built release executable in `build/Release/`.
 
 
+Testing
+--------
+The `pathmatch` utility uses the `PathMatch::PathMatcher` class, which uses the `wildComp` function.
+This set is tested at two points: one executable for unit tests of the `PathMatch::PathMatcher`
+class, and a set of acceptance tests for the `pathmatch` utility.
+
+The `PathMatcher` unit tests are contained in `src/PathMatcher/pathmatcherTest.cpp`. Currently,
+these just run a bunch of different patterns which are normalized and printed out for visual
+examination.
+
+The `pathmatch` acceptance tests are a Windows command script that run various workflows from the
+`test/` directory, using the `test/test-tree/` directory. To run the tests, use `test/run.cmd` at a
+Windows command prompt. The output is compared against golden image results (`test/*.gold`),
+reporting expected matches and unexpected changes, which can then either be rejected or accepted as
+the new golden image.
+
+
+
 ----
 Steve Hollasch  /  steve@hollasch.net  /  https://github.com/hollasch/pathmatch
 
